@@ -4,7 +4,6 @@ class Users {
     private $tbl_name = "users";
 
     public $id;
-    public $username;
     public $first_name;
     public $last_name;
     public $email;
@@ -19,12 +18,12 @@ class Users {
     }
 
     // Check if the account is suspended
-    public function checkAccStatus($username) {
-        $query = "SELECT status FROM " . $this->tbl_name . " WHERE username = :username";
+    public function checkAccStatus($email) {
+        $query = "SELECT status FROM " . $this->tbl_name . " WHERE email = :email";
         $stmt = $this->conn->prepare($query);
         
         // Bind the username to the query
-        $stmt->bindParam(':username', $username);
+        $stmt->bindParam('email', $email);
         $stmt->execute();
         
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -32,12 +31,11 @@ class Users {
         return ($row && $row['status'] === 'banned');
     }
     
-    // Check if username or email already exists
+    // Check if email already exists
     public function checkDuplicateAcc() {
-        $query = "SELECT * FROM " . $this->tbl_name . " WHERE username = :username OR email = :email";
+        $query = "SELECT * FROM " . $this->tbl_name . " WHERE email = :email";
         $stmt = $this->conn->prepare($query);
         
-        $stmt->bindParam(':username', $this->username);
         $stmt->bindParam(':email', $this->email);
         $stmt->execute();
         
@@ -51,8 +49,8 @@ class Users {
             return false;
         }
     
-        $query = "INSERT INTO " . $this->tbl_name . " (username, first_name, last_name, email, address, phone_number, roles, status, password) 
-                  VALUES (:username, :first_name, :last_name, :email, :address, :phone_number, :roles, :status, :password)";
+        $query = "INSERT INTO " . $this->tbl_name . " (first_name, last_name, email, address, phone_number, roles, status, password) 
+                  VALUES (:first_name, :last_name, :email, :address, :phone_number, :roles, :status, :password)";
         
         $stmt = $this->conn->prepare($query);
 
@@ -63,7 +61,6 @@ class Users {
         // Hash password before storing
         $hashedPassword = password_hash($this->password, PASSWORD_DEFAULT);
 
-        $stmt->bindParam(':username', $this->username);
         $stmt->bindParam(':first_name', $this->first_name);
         $stmt->bindParam(':last_name', $this->last_name);
         $stmt->bindParam(':email', $this->email);

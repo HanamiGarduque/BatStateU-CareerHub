@@ -1,9 +1,9 @@
 <?php
 class Database {
     private $host = 'localhost';
-    private $dbName = 'your_database_name';
-    private $username = 'your_username';
-    private $password = 'your_password';
+    private $dbName = 'batstateu_career_hub';
+    private $username = 'root';
+    private $password = '';
     private $conn;
 
     public function connect() {
