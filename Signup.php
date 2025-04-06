@@ -105,9 +105,9 @@ require_once './Database/db_connections.php';
 require_once './Database/crud_functions.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Initialize database connection
+    // Initialize database getConnection
     $database = new Database();
-    $db = $database->connect();
+    $db = $database->getConnect();
     // Initialize the Users object
     $user = new Users($db);
 

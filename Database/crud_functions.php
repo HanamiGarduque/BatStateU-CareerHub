@@ -3,7 +3,7 @@ class Users {
     private $conn;
     private $tbl_name = "users";
 
-    public $id;
+    public $user_id;
     public $first_name;
     public $last_name;
     public $email;
@@ -72,5 +72,31 @@ class Users {
 
         return $stmt->execute();
     } 
+}
+class Jobs {
+    private $conn;
+    private $tbl_name = "jobs";
+
+    public $job_id;
+public $title;
+public $company_name;
+public $location;
+public $type;
+public $salary_min;
+public $salary_max;
+public $description;
+
+
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+
+    public function retrieveJobs()
+    {
+        $query = "SELECT * FROM " . $this->tbl_name;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
 }
 ?>

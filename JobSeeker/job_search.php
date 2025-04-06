@@ -1,12 +1,5 @@
 <?php
-require_once '../Database/crud_functions.php';
-require_once '../Database/db_connections.php';
-
-$database = new Database();
-$db = $database->getConnect();
-$jobs = new Jobs($db);
-$stmt = $jobs->retrieveJobs();
-$num = $stmt->rowCount();
+session_start();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,13 +14,14 @@ $num = $stmt->rowCount();
 </head>
 
 <body>
-    <div class="dashboard-container">   
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-container">
                 <div class="logo"></div>
                 <h3>Career Hub</h3>
             </div>
-
+            
             <nav class="sidebar-nav">
                 <ul>
                     <li class="active">
@@ -52,7 +46,11 @@ $num = $stmt->rowCount();
         <!-- Main Content Area -->
         <main class="main-content">
             <!-- Header -->
-            <header class="dashboard-header">.
+            <header class="dashboard-header">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search for jobs...">
+                </div>
                 <div class="user-menu">
                     <div class="notifications">
                         <i class="fas fa-bell"></i>
@@ -68,7 +66,7 @@ $num = $stmt->rowCount();
             <!-- Job Search Content -->
             <div class="dashboard-content">
                 <h1>Find Jobs</h1>
-
+                
                 <div class="job-search-container">
                     <!-- Advanced Search Form -->
                     <div class="advanced-search">
@@ -78,9 +76,9 @@ $num = $stmt->rowCount();
                                 <label>Keywords</label>
                                 <input type="text" placeholder="Job title, skills, or keywords">
                             </div>
-
+                            
                             <div class="form-group">
-                                <label>Location</label> 
+                                <label>Location</label>
                                 <select>
                                     <option value="">All Locations</option>
                                     <option value="batangas-city">Batangas City</option>
@@ -90,7 +88,7 @@ $num = $stmt->rowCount();
                                     <option value="other">Other</option>
                                 </select>
                             </div>
-
+                            
                             <div class="form-group">
                                 <label>Job Type</label>
                                 <div class="checkbox-group">
@@ -108,7 +106,7 @@ $num = $stmt->rowCount();
                                     </label>
                                 </div>
                             </div>
-
+                            
                             <div class="form-group">
                                 <label>Industry</label>
                                 <select>
@@ -122,7 +120,7 @@ $num = $stmt->rowCount();
                                     <option value="other">Other</option>
                                 </select>
                             </div>
-
+                            
                             <div class="form-group">
                                 <label>Experience Level</label>
                                 <select>
@@ -133,7 +131,7 @@ $num = $stmt->rowCount();
                                     <option value="executive">Executive</option>
                                 </select>
                             </div>
-
+                            
                             <div class="form-group">
                                 <label>Salary Range</label>
                                 <select>
@@ -145,7 +143,7 @@ $num = $stmt->rowCount();
                                     <option value="60000+">Above ₱60,000</option>
                                 </select>
                             </div>
-
+                            
                             <div class="form-group">
                                 <label>Date Posted</label>
                                 <select>
@@ -156,12 +154,12 @@ $num = $stmt->rowCount();
                                     <option value="month">Last Month</option>
                                 </select>
                             </div>
-
+                            
                             <button type="submit" class="filter-btn">Apply Filters</button>
                             <button type="reset" class="reset-btn">Reset Filters</button>
                         </form>
                     </div>
-
+                    
                     <!-- Job Listings -->
                     <div class="job-listings">
                         <div class="job-listings-header">
@@ -176,40 +174,120 @@ $num = $stmt->rowCount();
                                 </select>
                             </div>
                         </div>
-
+                        
                         <div class="jobs-list">
                             <!-- Job Card 1 -->
-                            <?php
-            $stmt = $jobs->retrieveJobs();
-            if ($num > 0) {
-                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    extract($row);
-                    echo <<<HTML
-                    <div class="job-card">
-                        <div class="job-header">
-                            <div class="company-logo"></div>
-                            <div class="job-title-container">
-                                <h3>{$title}</h3>
-                                <p class="company-name">{$company_name}</p>
+                            <div class="job-card">
+                                <div class="job-header">
+                                    <div class="company-logo"></div>
+                                    <div class="job-title-container">
+                                        <h3>Software Developer</h3>
+                                        <p class="company-name">Tech Solutions Inc.</p>
+                                    </div>
+                                    <button class="save-job"><i class="far fa-bookmark"></i></button>
+                                </div>
+                                <div class="job-details">
+                                    <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Batangas City</div>
+                                    <div class="job-detail"><i class="fas fa-briefcase"></i> Full-time</div>
+                                    <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱30,000 - ₱45,000</div>
+                                </div>
+                                <div class="job-description">
+                                    <p>We are looking for a skilled software developer to join our team. The ideal candidate should have experience in web development...</p>
+                                </div>
+                                <div class="job-actions">
+                                    <button class="apply-btn">Apply Now</button>
+                                    <button class="view-btn">View Details</button>
+                                </div>
                             </div>
-                            <button class="save-job saved"><i class="fas fa-bookmark"></i></button>
+                            
+                            <!-- Job Card 2 -->
+                            <div class="job-card">
+                                <div class="job-header">
+                                    <div class="company-logo"></div>
+                                    <div class="job-title-container">
+                                        <h3>Marketing Specialist</h3>
+                                        <p class="company-name">Global Marketing PH</p>
+                                    </div>
+                                    <button class="save-job saved"><i class="fas fa-bookmark"></i></button>
+                                </div>
+                                <div class="job-details">
+                                    <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Lipa City</div>
+                                    <div class="job-detail"><i class="fas fa-briefcase"></i> Full-time</div>
+                                    <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱25,000 - ₱35,000</div>
+                                </div>
+                                <div class="job-description">
+                                    <p>We are seeking a creative and analytical Marketing Specialist to develop and implement marketing strategies that increase our brand awareness...</p>
+                                </div>
+                                <div class="job-actions">
+                                    <button class="apply-btn">Apply Now</button>
+                                    <button class="view-btn">View Details</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Job Card 3 -->
+                            <div class="job-card">
+                                <div class="job-header">
+                                    <div class="company-logo"></div>
+                                    <div class="job-title-container">
+                                        <h3>Customer Service Representative</h3>
+                                        <p class="company-name">Support Solutions</p>
+                                    </div>
+                                    <button class="save-job"><i class="far fa-bookmark"></i></button>
+                                </div>
+                                <div class="job-details">
+                                    <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Batangas City</div>
+                                    <div class="job-detail"><i class="fas fa-briefcase"></i> Part-time</div>
+                                    <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱18,000 - ₱22,000</div>
+                                </div>
+                                <div class="job-description">
+                                    <p>We are looking for a Customer Service Representative to join our team. The ideal candidate will have excellent communication skills...</p>
+                                </div>
+                                <div class="job-actions">
+                                    <button class="apply-btn">Apply Now</button>
+                                    <button class="view-btn">View Details</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Job Card 4 -->
+                            <div class="job-card">
+                                <div class="job-header">
+                                    <div class="company-logo"></div>
+                                    <div class="job-title-container">
+                                        <h3>Graphic Designer</h3>
+                                        <p class="company-name">Creative Designs Co.</p>
+                                    </div>
+                                    <button class="save-job"><i class="far fa-bookmark"></i></button>
+                                </div>
+                                <div class="job-details">
+                                    <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Santo Tomas</div>
+                                    <div class="job-detail"><i class="fas fa-briefcase"></i> Full-time</div>
+                                    <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱22,000 - ₱30,000</div>
+                                </div>
+                                <div class="job-description">
+                                    <p>We are looking for a creative Graphic Designer to join our team. The ideal candidate should have experience with Adobe Creative Suite...</p>
+                                </div>
+                                <div class="job-actions">
+                                    <button class="apply-btn">Apply Now</button>
+                                    <button class="view-btn">View Details</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="job-details">
-                            <div class="job-detail"><i class="fas fa-map-marker-alt"></i> {$location}</div>
-                            <div class="job-detail"><i class="fas fa-briefcase"></i> {$type}</div>
-                            <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}</div>
-                        </div>
-                        <div class="job-description">
-                            <p>{$description}</p>
-                        </div>
-                        <div class="job-actions">
-                            <button class="apply-btn">Apply Now</button>
-                            <button class="view-btn">View Details</button>
+                        
+                        <!-- Pagination -->
+                        <div class="pagination">
+                            <button class="pagination-btn prev"><i class="fas fa-chevron-left"></i></button>
+                            <button class="pagination-btn active">1</button>
+                            <button class="pagination-btn">2</button>
+                            <button class="pagination-btn">3</button>
+                            <button class="pagination-btn">4</button>
+                            <button class="pagination-btn">5</button>
+                            <button class="pagination-btn next"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
-                    HTML;
-                }
-            } else {
-                echo "<p>No jobs found.</p>";
-            }
-            ?>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

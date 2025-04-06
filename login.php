@@ -42,7 +42,7 @@ session_start();
         $inputPassword = trim($_POST['password']);
 
         $database = new Database();
-        $db = $database->connect();
+        $db = $database->getConnect();
 
         $query = "SELECT email, user_id, password, roles, status FROM users WHERE email = :email LIMIT 1";
         $stmt = $db->prepare($query);
