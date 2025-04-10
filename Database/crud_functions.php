@@ -99,4 +99,30 @@ public $description;
         return $stmt;
     }
 }
+class Bookmarks {
+    private $conn;
+    private $tbl_name = "saved_jobs";
+
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+
+    public function isBookmarked($user_id, $job_id) {
+        $stmt = $this->conn->prepare("SELECT * FROM . $this->tbl_name WHERE user_id = :user_id AND job_id = :job_id");
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->bindParam(':job_id', $job_id);
+        $stmt->execute();
+        return $stmt->rowCount() > 0;
+    }
+
+    public function add($user_id, $job_id) {
+        $stmt = $this->conn->prepare("INSERT INTO . $this->tbl_name (user_id, job_id) VALUES (?, ?)");
+        return $stmt->execute([$user_id, $job_id]);
+    }
+
+    public function remove($user_id, $job_id) {
+        $stmt = $this->conn->prepare("DELETE FROM . $this->tbl_name WHERE user_id = ? AND job_id = ?");
+        return $stmt->execute([$user_id, $job_id]);
+    }
+}
 ?>

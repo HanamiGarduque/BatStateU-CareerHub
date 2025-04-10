@@ -128,11 +128,6 @@ session_start();
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label>Professional Title</label>
-                                    <input type="text" value="Software Developer" required>
-                                </div>
-                                
-                                <div class="form-group">
                                     <label>About Me</label>
                                     <textarea rows="4">Passionate software developer with a strong foundation in web technologies and a keen interest in creating user-friendly applications. Currently pursuing a degree in Computer Science at Batangas State University.</textarea>
                                 </div>

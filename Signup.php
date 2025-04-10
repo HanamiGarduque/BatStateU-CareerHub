@@ -79,6 +79,17 @@ session_start();
                 </div>
 
                 <div class="form-group">
+                    <label>Role: <span class="hint">11 digits</span></label>
+                    <<select name="roles">
+                        <option value="Admin" <?php echo $user->roles == 'Admin' ? 'selected' : ''; ?>>Admin</option>
+                        <option value="Jobseeker" <?php echo $user->roles == 'Jobseeker' ? 'selected' : ''; ?>>Jobseeker</option>
+                        <option value="Employer" <?php echo $user->roles == 'Employeer' ? 'selected' : ''; ?>>Employer</option>
+                    </select>
+                </div>
+
+
+
+                <div class="form-group">
                     <label>Password: <span class="hint">minimum of 8 characters, at least 1 uppercase and a number</span></label>
                     <input type="password" name="password" required>
                 </div>
@@ -136,7 +147,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
     //checks if email format is correct
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !str_ends_with($email, '@g.batstate-u.edu.ph')) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['status'] = 'error';
         $_SESSION['message'] = 'Invalid email format or domain not allowed.';
         header("Location: Signup.php");

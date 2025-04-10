@@ -21,7 +21,7 @@ $num = $stmt->rowCount();
 </head>
 
 <body>
-    <div class="dashboard-container">   
+    <div class="dashboard-container">
         <aside class="sidebar">
             <div class="logo-container">
                 <div class="logo"></div>
@@ -80,7 +80,7 @@ $num = $stmt->rowCount();
                             </div>
 
                             <div class="form-group">
-                                <label>Location</label> 
+                                <label>Location</label>
                                 <select>
                                     <option value="">All Locations</option>
                                     <option value="batangas-city">Batangas City</option>
@@ -180,36 +180,86 @@ $num = $stmt->rowCount();
                         <div class="jobs-list">
                             <!-- Job Card 1 -->
                             <?php
-            $stmt = $jobs->retrieveJobs();
-            if ($num > 0) {
-                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    extract($row);
-                    echo <<<HTML
-                    <div class="job-card">
-                        <div class="job-header">
-                            <div class="company-logo"></div>
-                            <div class="job-title-container">
-                                <h3>{$title}</h3>
-                                <p class="company-name">{$company_name}</p>
-                            </div>
-                            <button class="save-job saved"><i class="fas fa-bookmark"></i></button>
-                        </div>
-                        <div class="job-details">
-                            <div class="job-detail"><i class="fas fa-map-marker-alt"></i> {$location}</div>
-                            <div class="job-detail"><i class="fas fa-briefcase"></i> {$type}</div>
-                            <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}</div>
-                        </div>
-                        <div class="job-description">
-                            <p>{$description}</p>
-                        </div>
-                        <div class="job-actions">
-                            <button class="apply-btn">Apply Now</button>
-                            <button class="view-btn">View Details</button>
-                        </div>
-                    </div>
-                    HTML;
-                }
-            } else {
-                echo "<p>No jobs found.</p>";
-            }
-            ?>
+                            $stmt = $jobs->retrieveJobs();
+                            if ($num > 0) {
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    extract($row);
+
+                                    // Get user ID (from session ideally)
+                                    $user_id = 1;
+
+                                    // Instantiate bookmark handler
+                                    $bookmark = new Bookmarks($db);
+
+                                    // Check if the current job is bookmarked
+                                    $isSaved = $bookmark->isBookmarked($user_id, $job_id);
+                                    $savedClass = $isSaved ? 'saved' : '';
+
+                                    echo <<<HTML
+                                        <div class="job-card">
+                                            <div class="job-header">
+                                                <div class="company-logo"></div>
+                                                <div class="job-title-container">
+                                                    <h3>{$title}</h3>
+                                                    <p class="company-name">{$company_name}</p>
+                                                </div>
+                                                <button class="save-job {$savedClass}" data-job-id="{$job_id}"><i class="fas fa-bookmark"></i></button>
+                                            </div>
+                                            <div class="job-details">
+                                                <div class="job-detail"><i class="fas fa-map-marker-alt"></i> {$location}</div>
+                                                <div class="job-detail"><i class="fas fa-briefcase"></i> {$type}</div>
+                                                <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}</div>
+                                            </div>
+                                            <div class="job-description">
+                                                <p>{$description}</p>
+                                            </div>
+                                            <div class="job-description">
+                                                <p>{$job_id}</p>
+                                            </div>
+                                            <div class="job-actions">
+                                                <button class="apply-btn">Apply Now</button>
+                                                <button class="view-btn">View Details</button>
+                                            </div>
+                                        </div>
+                                    HTML;
+                                }
+                            } else {
+                                echo "<p>No jobs found.</p>";
+                            }
+
+                            ?>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    document.querySelectorAll('.save-job').forEach(button => {
+                                        button.addEventListener('click', function() {
+                                            const jobId = this.getAttribute('data-job-id');
+
+                                            fetch('bookmark_job.php', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/x-www-form-urlencoded',
+                                                    },
+                                                    body: 'job_id=' + jobId
+                                                })
+                                                .then(response => response.text())
+                                                .then(data => {
+                                                    if (data === 'saved') {
+                                                        this.classList.add('saved');
+                                                        Swal.fire({
+                                                            icon: 'success',
+                                                            title: 'Job bookmarked!',
+                                                            showConfirmButton: false,
+                                                            timer: 1500
+                                                        });
+
+                                                    } else if (data === 'unsaved') {
+                                                        this.classList.remove('saved');
+                                                        alert('Bookmark removed!');
+                                                    } else {
+                                                        alert('Something went wrong.');
+                                                    }
+                                                });
+                                        });
+                                    });
+                                });
+                            </script>
