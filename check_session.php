@@ -14,29 +14,9 @@ function isEmployer() {
 function isJobseeker() {
     return isset($_SESSION['role']) && $_SESSION['role'] === 'jobseeker';
 }
+
+// Only check if the user is logged in
 if (!isLoggedIn()) {
-    header("Location:  /PHPSYSTEM/login.php");
+    header("Location: /ADMSSYSTEM/login.php");
     exit();
 }
-
-function ensureAdminAccess() {
-    if (isAdmin()) { 
-        header('Location: /PHPSYSTEM/homepage.php');
-        exit();
-    }
-}
-
-function ensureEmployerAccess() {
-    if (isEmployer()) { 
-        header('Location: /PHPSYSTEM/homepage.php');
-        exit();
-    }
-}
-
-function ensureJobseeker() {
-    if (isJobseeker()) { 
-        header('Location: /PHPSYSTEM/homepage.php');
-        exit();
-    }
-}
-?>

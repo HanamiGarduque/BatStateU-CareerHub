@@ -1,5 +1,13 @@
 <?php
-session_start();
+require_once '../check_session.php';
+require_once '../Database/crud_functions.php';
+require_once '../Database/db_connections.php';
+
+if (!isEmployer()) {
+  header('Location: /ADMSSYSTEM/login.php'); // Or wherever you want
+  exit();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,5 +1,14 @@
 <?php
 session_start();
+require_once './Database/db_connections.php';
+require_once './Database/crud_functions.php';
+// Initialize database getConnection
+$database = new Database();
+$db = $database->getConnect();
+// Initialize the Users object
+$user = new Users($db);
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -79,13 +88,13 @@ session_start();
                 </div>
 
                 <div class="form-group">
-                    <label>Role: <span class="hint">11 digits</span></label>
-                    <<select name="roles">
-                        <option value="Admin" <?php echo $user->roles == 'Admin' ? 'selected' : ''; ?>>Admin</option>
+                    <label>Role:</label>
+                    <select name="roles">
                         <option value="Jobseeker" <?php echo $user->roles == 'Jobseeker' ? 'selected' : ''; ?>>Jobseeker</option>
-                        <option value="Employer" <?php echo $user->roles == 'Employeer' ? 'selected' : ''; ?>>Employer</option>
+                        <option value="Employer" <?php echo $user->roles == 'Employer' ? 'selected' : ''; ?>>Employer</option>
                     </select>
                 </div>
+
 
 
 
@@ -112,15 +121,9 @@ session_start();
 </body>
 
 <?php
-require_once './Database/db_connections.php';
-require_once './Database/crud_functions.php';
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Initialize database getConnection
-    $database = new Database();
-    $db = $database->getConnect();
-    // Initialize the Users object
-    $user = new Users($db);
 
     //sanitize form data
     $first_name = strtoupper(htmlspecialchars(trim($_POST['first_name'])));
@@ -128,6 +131,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = htmlspecialchars(trim($_POST['email']));
     $address = strtoupper(htmlspecialchars(trim($_POST['address'])));
     $phone_number = htmlspecialchars(trim($_POST['phone_number']));
+    $role = htmlspecialchars(trim($_POST['roles']));
     $password = htmlspecialchars(trim($_POST['password']));
     $confirm_password = htmlspecialchars(trim($_POST['confirm_password']));
 
@@ -178,6 +182,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user->email = $email;
     $user->address = $address;
     $user->phone_number = $phone_number;
+    $user->roles = $role;
+
 
     // Check for duplicate accounts
     if ($user->checkDuplicateAcc()) {
@@ -188,6 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($user->create()) {
             $_SESSION['status'] = 'success';
             $_SESSION['message'] = 'Your account has been created successfully.';
+
         } else {
             $_SESSION['status'] = 'error';
             $_SESSION['message'] = 'There was an error creating your account. Please try again.';

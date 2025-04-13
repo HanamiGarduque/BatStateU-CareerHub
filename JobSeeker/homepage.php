@@ -1,6 +1,12 @@
 <?php
+require_once '../check_session.php';
 require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
+
+if (!isJobseeker()) {
+    header('Location: ../login.php'); // Or wherever you want
+    exit();
+}
 
 $database = new Database();
 $db = $database->getConnect();

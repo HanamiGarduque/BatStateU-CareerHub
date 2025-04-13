@@ -8,7 +8,7 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Form</title>
-    <link rel="stylesheet" href="Layouts/login.css">;
+    <link rel="stylesheet" href="Layouts/login.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
@@ -48,14 +48,12 @@ session_start();
         $stmt = $db->prepare($query);
         $stmt->bindParam(':email', $inputEmail);
         $stmt->execute();
-        echo $stmt->rowCount();
 
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $hashedPassword = $row['password'];
             $role = $row['roles'];
-            $status = $row['status'];
-
+            $status = trim($row['status']);
 
             if ($status === 'banned') {
                 echo '<script>
@@ -67,14 +65,16 @@ session_start();
                 </script>';
                 exit;
             }
+
             if (password_verify($inputPassword, $hashedPassword)) {
                 $_SESSION['id'] = $row['user_id'];
                 $_SESSION['role'] = $role;
+                
 
                 if ($role === 'jobseeker') {
-                    header("Location: Jobseeker/homepage.php");
+                    header("Location: JobSeeker/homepage.php");
                 } elseif ($role === 'employer') {   
-                    header("Location: Employer/homepage.php");
+                    header("Location: Employer/dashboard.php");
                 } else {
                     header("Location: Admin/homepage.php");
                 }
@@ -104,6 +104,7 @@ session_start();
         });
         </script>';
         }
+    
     }
 
     ?>
