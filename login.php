@@ -44,10 +44,8 @@ session_start();
         $database = new Database();
         $db = $database->getConnect();
 
-        $query = "SELECT email, user_id, password, roles, status FROM users WHERE email = :email LIMIT 1";
-        $stmt = $db->prepare($query);
-        $stmt->bindParam(':email', $inputEmail);
-        $stmt->execute();
+        $user = new Users($db);
+        $stmt = $user->retrieveProfile($inputEmail);
 
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -69,6 +67,7 @@ session_start();
             if (password_verify($inputPassword, $hashedPassword)) {
                 $_SESSION['id'] = $row['user_id'];
                 $_SESSION['role'] = $role;
+                $_SESSION['name'] = $row['first_name'];
                 
 
                 if ($role === 'jobseeker') {

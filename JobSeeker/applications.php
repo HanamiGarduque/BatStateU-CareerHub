@@ -31,7 +31,7 @@ session_start();
                         <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
                     </li>
                     <li>
-                        <a href="applications.php"><i class="fas fa-file-alt"></i> My Applications</a>
+                        <a href="applications_management.php"><i class="fas fa-file-alt"></i> My Applications</a>
                     </li>
                     <li>
                         <a href="saved_jobs.php"><i class="fas fa-bookmark"></i> Saved Jobs</a>

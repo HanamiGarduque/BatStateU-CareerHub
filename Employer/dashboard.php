@@ -42,7 +42,7 @@ if (!isEmployer()) {
             <a href="job_postings.php"><i class="fas fa-briefcase"></i> Job Postings</a>
           </li>
           <li>
-            <a href="applications.php"><i class="fas fa-file-alt"></i> Applications</a>
+            <a href="applications_management.php"><i class="fas fa-file-alt"></i> Applications</a>
           </li>
           <li>
             <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
@@ -127,7 +127,7 @@ if (!isEmployer()) {
         <!-- Recent Applications -->
         <div class="section-header">
           <h2>Recent Applications</h2>
-          <a href="applications.php" class="view-all">View All</a>
+          <a href="applications_management.php" class="view-all">View All</a>
         </div>
         
         <div class="applications-container">

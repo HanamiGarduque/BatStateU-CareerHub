@@ -4,7 +4,7 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isEmployer()) {
-  header('Location: /ADMSSYSTEM/login.php'); // Or wherever you want
+  header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
   exit();
 }
 ?>
@@ -38,10 +38,10 @@ if (!isEmployer()) {
             <a href="employer_profile.php"><i class="fas fa-user-tie"></i> Employer Profile</a>
           </li>
           <li>
-            <a href="job-postings.php"><i class="fas fa-briefcase"></i> Job Postings</a>
+            <a href="job_postings.php"><i class="fas fa-briefcase"></i> Job Postings</a>
           </li>
           <li>
-            <a href="applications.php"><i class="fas fa-file-alt"></i> Applications</a>
+            <a href="applications_management.php"><i class="fas fa-file-alt"></i> Applications</a>
           </li>
           <li>
             <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
@@ -71,7 +71,7 @@ if (!isEmployer()) {
           </div>
           <div class="user-profile">
             <img src="../placeholder.jpg" alt="Profile Picture">
-            <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
+            <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Employer'; ?></span>
           </div>
         </div>
       </header>
@@ -86,16 +86,33 @@ if (!isEmployer()) {
 
         <div class="profile-container">
           <?php
+          $updateStatus = '';
           $database = new Database();
           $db = $database->getConnect();
 
-          $user = new Users($db);
+          $employer = new Employer($db);
           $user_id = $_SESSION['id'];
 
-          $stmt = $user->retrieveProfile($user_id);
-          $num = $stmt->rowCount();
+          if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $company_name = isset($_POST['company_name']) ? $_POST['company_name'] : '';
+            $job_title = isset($_POST['job_title']) ? $_POST['job_title'] : '';
+            $bio = isset($_POST['bio']) ? $_POST['bio'] : '';
 
-          if ($num > 0) {
+
+            $employer->company_name = $company_name;
+            $employer->job_title = $job_title;
+            $employer->bio = $bio;
+
+            if ($employer->updateProfile($user_id)) {
+              $updateStatus = 'success';
+            } else {
+              $updateStatus = 'error';
+            }
+          }
+
+          $stmt = $employer->retrieveEmpProfile($user_id);
+
+          if ($stmt && $stmt->rowCount() > 0) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
               // Extract variables
               $full_name = htmlspecialchars($row['first_name'] . ' ' . $row['last_name']);
@@ -105,13 +122,12 @@ if (!isEmployer()) {
               $phone = htmlspecialchars($row['phone_number']);
               $bio = htmlspecialchars($row['bio'] ?? '');
           ?>
-              <form method="POST" action="">
-                <!-- Personal Information Section -->
+              <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                 <div class="profile-section">
                   <div class="section-header">
                     <h2><i class="fas fa-user"></i> Personal Information</h2>
                     <div class="section-actions">
-                      <button class="save-section-btn" data-section="personal"><i class="fas fa-save"></i> Save</button>
+                      <button class="save-section-btn" type="submit" name="save_personal" data-section="personal"><i class="fas fa-save"></i> Save</button>
                     </div>
                   </div>
 
@@ -134,14 +150,14 @@ if (!isEmployer()) {
                     <div class="info-row">
                       <div class="info-label">Job Title:</div>
                       <div class="info-value">
-                        <input type="text" id="job-title" name="job-title" value="<?= $job_title ?>" class="inline-edit">
+                        <input type="text" id="job_title" name="job_title" value="<?= $job_title ?>" class="inline-edit">
                       </div>
                     </div>
 
                     <div class="info-row">
                       <div class="info-label">Company Name:</div>
                       <div class="info-value">
-                        <input type="text" id="company-name" name="company-name" value="<?= $company_name ?>" class="inline-edit">
+                        <input type="text" id="company_name" name="company_name" value="<?= $company_name ?>" class="inline-edit">
                       </div>
                     </div>
 
@@ -154,197 +170,42 @@ if (!isEmployer()) {
                   </div>
                 </div>
               </form>
-              
         </div>
     <?php
-            } // while
-          } // if
+            } 
+          } 
     ?>
       </div>
   </div>
-  <?php
-  if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $company_name = isset($_POST['company-name']) ? $_POST['company-name'] : '';
-    $job_title = isset($_POST['job-title']) ? $_POST['job-title'] : '';
-    $bio = isset($_POST['bio']) ? $_POST['bio'] : '';
 
-    $user->company_name = $company_name;
-    $user->job_title = $job_title;
-    $user->bio = $bio;
-
-    if ($user->updateProfile($user_id)) {
-      echo "<script>
-            Swal.fire({
-            title: 'Section Updated',
-            text: `Your]\ information has been updated successfully.`,
-            icon: 'success',
-            confirmButtonColor: '#c41e3a'
-          });
-              }).then(() => {
-                  window.location.href = 'employer_profile.php';
-              });
-            </script>";
-    } else {
-      echo "<script>
-              Swal.fire({
-                  title: 'Error!',
-                  text: 'Error updating user',
-                  icon: 'error',
-                  confirmButtonText: 'Try Again',
-                  background: '#fff',
-                  backdrop: true,
-              }).then(() => {
-                  window.location.href = 'employer_profile.php';
-              });
-            </script>";
-    }
-  }
-  ?>
   </main>
   </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Save Section Buttons
-      const saveSectionBtns = document.querySelectorAll('.save-section-btn');
-
-      saveSectionBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-          const section = this.getAttribute('data-section');
-
-          // Simulate saving changes for the specific section
-          Swal.fire({
-            title: 'Section Updated',
-            text: `Your ${section} information has been updated successfully.`,
-            icon: 'success',
-            confirmButtonColor: '#c41e3a'
-          });
-        });
-      });
-
-      // Save All Button
-      const saveAllBtn = document.querySelector('.save-all-btn');
-
-      saveAllBtn.addEventListener('click', function() {
-        // Validate form fields
-        const requiredFields = document.querySelectorAll('.inline-edit[required]');
-        let isValid = true;
-
-        requiredFields.forEach(field => {
-          if (!field.value.trim()) {
-            isValid = false;
-            field.classList.add('error');
-          } else {
-            field.classList.remove('error');
-          }
-        });
-
-        if (!isValid) {
-          Swal.fire({
-            title: 'Error',
-            text: 'Please fill in all required fields.',
-            icon: 'error',
-            confirmButtonColor: '#c41e3a'
-          });
-          return;
-        }
-
-        // Simulate saving all changes
-        Swal.fire({
-          title: 'Profile Updated',
-          text: 'All your profile information has been updated successfully.',
-          icon: 'success',
-          confirmButtonColor: '#c41e3a'
-        });
-      });
-
-    });
-  </script><script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Save Section Buttons
-    const saveSectionBtns = document.querySelectorAll('.save-section-btn');
-
-    saveSectionBtns.forEach(btn => {
-      btn.addEventListener('click', function(event) {
-        event.preventDefault(); // Prevent form submission
-
-        const section = this.getAttribute('data-section');
-        const sectionContainer = this.closest('.profile-section');
-
-        // Find all inline-edit inputs within the section
-        const inputs = sectionContainer.querySelectorAll('.inline-edit');
-
-        inputs.forEach(input => {
-          const value = input.value.trim();
-
-          // Find the corresponding display element and update it
-          const displayElement = input.closest('.info-row').querySelector('.info-value');
-          if (displayElement) {
-            displayElement.textContent = value; // Update the displayed value
-          }
-        });
-
-        // Simulate saving changes for the specific section
-        Swal.fire({
-          title: 'Section Updated',
-          text: `Your ${section} information has been updated successfully.`,
-          icon: 'success',
-          confirmButtonColor: '#c41e3a'
-        });
-      });
-    });
-
-    // Save All Button
-    const saveAllBtn = document.querySelector('.save-all-btn');
-
-    saveAllBtn.addEventListener('click', function(event) {
-      event.preventDefault(); // Prevent form submission
-
-      // Validate form fields
-      const requiredFields = document.querySelectorAll('.inline-edit[required]');
-      let isValid = true;
-
-      requiredFields.forEach(field => {
-        if (!field.value.trim()) {
-          isValid = false;
-          field.classList.add('error');
-        } else {
-          field.classList.remove('error');
-        }
-      });
-
-      if (!isValid) {
-        Swal.fire({
-          title: 'Error',
-          text: 'Please fill in all required fields.',
-          icon: 'error',
-          confirmButtonColor: '#c41e3a'
-        });
-        return;
-      }
-
-      // Update all displayed values
-      const allInputs = document.querySelectorAll('.inline-edit');
-      allInputs.forEach(input => {
-        const value = input.value.trim();
-
-        // Find the corresponding display element and update it
-        const displayElement = input.closest('.info-row').querySelector('.info-value');
-        if (displayElement) {
-          displayElement.textContent = value; // Update the displayed value
-        }
-      });
-
-      // Simulate saving all changes
+  <?php if ($updateStatus === 'success'): ?>
+    <script>
       Swal.fire({
-        title: 'Profile Updated',
-        text: 'All your profile information has been updated successfully.',
+        title: 'Section Updated',
+        text: 'Your information has been updated successfully.',
         icon: 'success',
         confirmButtonColor: '#c41e3a'
+      }).then(() => {
+        window.location.href = 'employer_profile.php';
       });
-    });
-  });
-</script>
+    </script>
+  <?php elseif ($updateStatus === 'error'): ?>
+    <script>
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error updating user',
+        icon: 'error',
+        confirmButtonText: 'Try Again',
+        background: '#fff',
+        backdrop: true,
+      }).then(() => {
+        window.location.href = 'employer_profile.php';
+      });
+    </script>
+  <?php endif; ?>
+
 </body>
 
 </html>

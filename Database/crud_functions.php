@@ -2,19 +2,16 @@
 class Users
 {
     private $conn;
-    private $tbl_name = "users";
 
     public $user_id;
     public $first_name;
     public $last_name;
-    public $job_title;
     public $email;
     public $address;
     public $phone_number;
     public $roles;
     public $status;
     public $password;
-    public $company_name;
     public $bio;
 
     public function __construct($db)
@@ -25,27 +22,17 @@ class Users
     // Check if the account is suspended
     public function checkAccStatus($email)
     {
-        $query = "SELECT status FROM " . $this->tbl_name . " WHERE email = :email";
-        $stmt = $this->conn->prepare($query);
-
-        // Bind the username to the query
-        $stmt->bindParam('email', $email);
-        $stmt->execute();
-
+        $stmt = $this->conn->prepare("CALL check_user_status(:email)");
+        $stmt->execute([':email' => $email]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
         return ($row && $row['status'] === 'banned');
     }
 
     // Check if email already exists
     public function checkDuplicateAcc()
     {
-        $query = "SELECT * FROM " . $this->tbl_name . " WHERE email = :email";
-        $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(':email', $this->email);
-        $stmt->execute();
-
+        $stmt = $this->conn->prepare("CALL check_duplicate_email(:email)");
+        $stmt->execute([':email' => $this->email]);
         return $stmt->rowCount() > 0;
     }
 
@@ -57,55 +44,39 @@ class Users
             return false;
         }
 
-        $query = "INSERT INTO " . $this->tbl_name . " (first_name, last_name, email, address, phone_number, roles, status, password) 
-                  VALUES (:first_name, :last_name, :email, :address, :phone_number, :roles, :status, :password)";
+        try {
+            $defaultStatus = 'active';
 
-        $stmt = $this->conn->prepare($query);
+            $stmt = $this->conn->prepare("CALL create_user(:first_name, :last_name, :email, :address, :phone_number, :roles, :status, :password)");
 
-        $defaultStatus = 'active';
+            $stmt->bindParam(':first_name', $this->first_name);
+            $stmt->bindParam(':last_name', $this->last_name);
+            $stmt->bindParam(':email', $this->email);
+            $stmt->bindParam(':address', $this->address);
+            $stmt->bindParam(':phone_number', $this->phone_number);
+            $stmt->bindParam(':roles', $this->roles);
+            $stmt->bindParam(':status', $defaultStatus);
+            $stmt->bindParam(':password', $this->password);
 
-        // Hash password before storing
-        $stmt->bindParam(':first_name', $this->first_name);
-        $stmt->bindParam(':last_name', $this->last_name);
-        $stmt->bindParam(':email', $this->email);
-        $stmt->bindParam(':address', $this->address);
-        $stmt->bindParam(':phone_number', $this->phone_number);
-        $stmt->bindParam(':roles', $this->roles);
-        $stmt->bindParam(':status', $defaultStatus);
-        $stmt->bindParam(':password', $this->password);
-
-        return $stmt->execute();
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                echo "Failed to create user.";
+                return false;
+            }
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+            return false;
+        }
     }
-    public function retrieveProfile($user_id)
+
+    public function retrieveProfile($email)
     {
-        $query = "SELECT * FROM " . $this->tbl_name . " WHERE user_id = :user_id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->execute();
+        $stmt = $this->conn->prepare("CALL retrieve_user_by_email(:email)");
+        $stmt->execute([':email' => $email]);
         return $stmt;
     }
-
-    public function updateProfile($user_id)
-    {
-        $query = "UPDATE " . $this->tbl_name . " 
-              SET company_name = :company_name, job_title = :job_title, bio = :bio
-              WHERE user_id = :user_id";
-
-        $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->bindParam(':company_name', $this->company_name);
-        $stmt->bindParam(':job_title', $this->job_title);
-        $stmt->bindParam(':bio', $this->bio);
-
-        if ($stmt->execute()) {
-            return true;
-        }
-        return false;
-        
-    }
 }
-
 class Jobs
 {
     private $conn;
@@ -165,4 +136,43 @@ class Bookmarks
         return $stmt->execute([$user_id, $job_id]);
     }
 }
-?>
+
+class Employer
+{
+    private $conn;
+
+    public $user_id;
+    public $emp_id;
+    public $company_name;
+    public $job_title;
+    public $bio;
+
+    public function __construct($db)
+    {
+        $this->conn = $db;
+    }
+
+    public function updateProfile($user_id)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL update_employer_details(:user_id, :company_name, :job_title, :bio)");
+            $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+            $stmt->bindParam(':company_name', $this->company_name);
+            $stmt->bindParam(':job_title', $this->job_title);
+            $stmt->bindParam(':bio', $this->bio);
+
+            $stmt->execute();
+            return true;
+        } catch (PDOException $e) {
+            error_log("Stored Procedure Failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function retrieveEmpProfile($user_id)
+    {
+        $stmt = $this->conn->prepare("CALL retrieve_emp_profile(:user_id)");
+        $stmt->execute([':user_id' => $user_id]);
+        return $stmt;
+    }
+}

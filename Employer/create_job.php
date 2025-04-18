@@ -32,10 +32,10 @@ session_start();
                         <a href="employer_profile.php"><i class="fas fa-user-tie"></i> Employer Profile</a>
                     </li>
                     <li class="active">
-                        <a href="job-postings.php"><i class="fas fa-briefcase"></i> Job Postings</a>
+                        <a href="job_postings.php"><i class="fas fa-briefcase"></i> Job Postings</a>
                     </li>
                     <li>
-                        <a href="applications.php"><i class="fas fa-file-alt"></i> Applications</a>
+                        <a href="applications_management.php"><i class="fas fa-file-alt"></i> Applications</a>
                     </li>
                     <li>
                         <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
