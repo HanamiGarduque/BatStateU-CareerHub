@@ -45,7 +45,7 @@ session_start();
         $db = $database->getConnect();
 
         $user = new Users($db);
-        $stmt = $user->retrieveProfile($inputEmail);
+        $stmt = $user->retrieveProfileByEmail($inputEmail);
 
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -24,7 +24,7 @@ session_start();
             
             <nav class="sidebar-nav">
                 <ul>
-                    <li class="active">
+                    <li>
                         <a href="homepage.php"><i class="fas fa-search"></i> Find Jobs</a>
                     </li>
                     <li>
@@ -33,8 +33,7 @@ session_start();
                     <li>
                         <a href="applications_management.php"><i class="fas fa-file-alt"></i> My Applications</a>
                     </li>
-                    <li>
-                        <a href="saved_jobs.php"><i class="fas fa-bookmark"></i> Saved Jobs</a>
+                    <li class="active">                        <a href="saved_jobs.php"><i class="fas fa-bookmark"></i> Saved Jobs</a>
                     </li>
                     <li class="logout">
                         <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>

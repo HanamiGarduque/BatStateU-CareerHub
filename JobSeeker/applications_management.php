@@ -24,14 +24,13 @@ session_start();
             
             <nav class="sidebar-nav">
                 <ul>
-                    <li class="active">
+                    <li>
                         <a href="homepage.php"><i class="fas fa-search"></i> Find Jobs</a>
                     </li>
                     <li>
                         <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
                     </li>
-                    <li>
-                        <a href="applications_management.php"><i class="fas fa-file-alt"></i> My Applications</a>
+                    <li class="active">                        <a href="applications_management.php"><i class="fas fa-file-alt"></i> My Applications</a>
                     </li>
                     <li>
                         <a href="saved_jobs.php"><i class="fas fa-bookmark"></i> Saved Jobs</a>

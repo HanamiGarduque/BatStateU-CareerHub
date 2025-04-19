@@ -4,7 +4,7 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isEmployer()) {
-  header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
+  header('Location: /ADMSSYSTEM/logout.php'); 
   exit();
 }
 ?>
@@ -90,7 +90,7 @@ if (!isEmployer()) {
           $database = new Database();
           $db = $database->getConnect();
 
-          $employer = new Employer($db);
+          $employer = new Employers($db);
           $user_id = $_SESSION['id'];
 
           if ($_SERVER['REQUEST_METHOD'] === 'POST') {
