@@ -125,10 +125,16 @@ class Jobs
         $this->conn = $db;
     }
 
-    public function retrieveJobs()
+    public function retrieveJobs($keyword = '')
     {
-        $query = "SELECT * FROM " . $this->tbl_name;
-        $stmt = $this->conn->prepare($query);
+        if (!empty($keyword)) {
+            $query = "SELECT * FROM " . $this->tbl_name . " WHERE title LIKE :keyword OR description LIKE :keyword";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':keyword', '%' . $keyword . '%');
+        } else {
+            $query = "SELECT * FROM " . $this->tbl_name;
+            $stmt = $this->conn->prepare($query);
+        }
         $stmt->execute();
         return $stmt;
     }

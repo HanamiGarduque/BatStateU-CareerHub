@@ -11,7 +11,12 @@ if (!isJobseeker()) {
 $database = new Database();
 $db = $database->getConnect();
 $jobs = new Jobs($db);
-$stmt = $jobs->retrieveJobs();
+
+// Get the search keyword from the request
+$keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
+
+// Retrieve jobs based on the keyword
+$stmt = $jobs->retrieveJobs($keyword);
 $num = $stmt->rowCount();
 ?>
 <!DOCTYPE html>
@@ -79,10 +84,10 @@ $num = $stmt->rowCount();
                     <!-- Advanced Search Form -->
                     <div class="advanced-search">
                         <h3>Filter Jobs</h3>
-                        <form class="filter-form">
+                        <form class="filter-form" method="GET" action="homepage.php">
                             <div class="form-group">
                                 <label>Keywords</label>
-                                <input type="text" placeholder="Job title, skills, or keywords">
+                                <input type="text" name="keyword" placeholder="Job title, skills, or keywords" value="<?php echo htmlspecialchars($keyword); ?>">
                             </div>
 
                             <div class="form-group">
@@ -164,7 +169,7 @@ $num = $stmt->rowCount();
                             </div>
 
                             <button type="submit" class="filter-btn">Apply Filters</button>
-                            <button type="reset" class="reset-btn">Reset Filters</button>
+                            <button type="reset" class="reset-btn" onclick="window.location.href='homepage.php'">Reset Filters</button>
                         </form>
                     </div>
 
@@ -172,7 +177,7 @@ $num = $stmt->rowCount();
                     <div class="job-listings">
                         <div class="job-listings-header">
                             <h3>120 Jobs Found</h3>
-                            <div class="sort-options">
+<div class="sort-options">
                                 <label>Sort by:</label>
                                 <select>
                                     <option value="relevance">Relevance</option>
@@ -184,53 +189,52 @@ $num = $stmt->rowCount();
                         </div>
 
                         <div class="jobs-list">
-                            <!-- Job Card 1 -->
-                            <?php
-                            $stmt = $jobs->retrieveJobs();
-                            if ($num > 0) {
-                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                    extract($row);
+    <?php
+    if ($num > 0) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            extract($row);
 
-                                    // Get user ID (from session ideally)
-                                    $user_id = 1;
+            // Get user ID (from session ideally)
+            $user_id = 1;
 
-                                    // Instantiate bookmark handler
-                                    $bookmark = new Bookmarks($db);
+            // Instantiate bookmark handler
+            $bookmark = new Bookmarks($db);
 
-                                    // Check if the current job is bookmarked
-                                    $isSaved = $bookmark->isBookmarked($user_id, $job_id);
-                                    $savedClass = $isSaved ? 'saved' : '';
+            // Check if the current job is bookmarked
+            $isSaved = $bookmark->isBookmarked($user_id, $job_id);
+            $savedClass = $isSaved ? 'saved' : '';
 
-                                    echo <<<HTML
-                                        <div class="job-card">
-                                            <div class="job-header">
-                                                <div class="company-logo"></div>
-                                                <div class="job-title-container">
-                                                    <h3>{$title}</h3>
-                                                    <p class="company-name">{$company_name}</p>
-                                                </div>
-                                                <button class="save-job {$savedClass}" data-job-id="{$job_id}"><i class="fas fa-bookmark"></i></button>
-                                            </div>
-                                            <div class="job-details">
-                                                <div class="job-detail"><i class="fas fa-map-marker-alt"></i> {$location}</div>
-                                                <div class="job-detail"><i class="fas fa-briefcase"></i> {$type}</div>
-                                                <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}</div>
-                                            </div>
-                                            <div class="job-description">
-                                                <p>{$description}</p>
-                                            </div>
-                                            <div class="job-actions">
-                                                <a href="applying_job.php?job_id={$job_id}" class="apply-btn">Apply Now</a>
-                                                <button class="view-btn">View Details</button>
-                                            </div>
-                                        </div>
-                                    HTML;
-                                }
-                            } else {
-                                echo "<p>No jobs found.</p>";
-                            }
+            echo <<<HTML
+                <div class="job-card">
+                    <div class="job-header">
+                        <div class="company-logo"></div>
+                        <div class="job-title-container">
+                            <h3>{$title}</h3>
+                            <p class="company-name">{$company_name}</p>
+                        </div>
+                        <button class="save-job {$savedClass}" data-job-id="{$job_id}"><i class="fas fa-bookmark"></i></button>
+                    </div>
+                    <div class="job-details">
+                        <div class="job-detail"><i class="fas fa-map-marker-alt"></i> {$location}</div>
+                        <div class="job-detail"><i class="fas fa-briefcase"></i> {$type}</div>
+                        <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}</div>
+                    </div>
+                    <div class="job-description">
+                        <p>{$description}</p>
+                    </div>
+                    <div class="job-actions">
+                        <a href="applying_job.php?job_id={$job_id}" class="apply-btn">Apply Now</a>
+                        <button class="view-btn">View Details</button>
+                    </div>
+                </div>
+            HTML;
+        }
+    } else {
+        echo "<p>No jobs found.</p>";
+    }
+    ?>
+</div>
 
-                            ?>
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
                                     document.querySelectorAll('.save-job').forEach(button => {
@@ -266,3 +270,29 @@ $num = $stmt->rowCount();
                                     });
                                 });
                             </script>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    const searchInput = document.querySelector('input[name="keyword"]');
+
+                                    
+                                    searchInput.focus();
+                                    const value = searchInput.value;
+                                    searchInput.value = ''; 
+
+                                    searchInput.value = value; 
+
+                                    searchInput.addEventListener('input', function () {
+                                        if (this.value.trim() === '') {
+                                            window.location.href = 'homepage.php';
+                                        }
+                                    });
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
