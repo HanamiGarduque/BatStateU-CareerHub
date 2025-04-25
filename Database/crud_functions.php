@@ -132,6 +132,12 @@ class Jobs
         $stmt->execute();
         return $stmt;
     }
+    public function retrieveJobById($job_id)
+    {
+        $stmt = $this->conn->prepare("CALL get_job_by_ID(:job_id)");
+        $stmt->execute([':job_id' => $job_id]);
+        return $stmt;
+    }
 }
 class Bookmarks
 {
@@ -204,7 +210,53 @@ class Employers
         return $stmt;
     }
 }
+class JobApplication {
+    private $conn;
 
+    public function __construct($db)
+    {
+        $this->conn = $db;
+    }
+    public function createApplication($job_id, $user_id, $cover_letter, $resume_path) {
+        try {
+            $stmt = $this->conn->prepare("CALL CreateApplication(:job_id, :user_id, :cover_letter, :resume_path, :status)");
+            $stmt->execute([
+                ':job_id' => $job_id,
+                ':user_id' => $user_id,
+                ':cover_letter' => $cover_letter,
+                ':resume_path' => $resume_path,
+                ':status' => 'submitted' // Default status
+            ]);
+            
+            return true;
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function hasAlreadyApplied($job_id, $user_id) {
+        $query = "SELECT COUNT(*) as total FROM applications WHERE job_id = :job_id AND user_id = :user_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':job_id', $job_id);
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['total'] > 0;
+    }
+
+    public function updateApplicationStatus($application_id, $status) {
+        try {
+            $stmt = $this->conn->prepare("CALL UpdateApplicationStatus(:id, :status)");
+            $stmt->bindParam(':id', $application_id);
+            $stmt->bindParam(':status', $status);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+}
 class Education
 {
     private $conn;

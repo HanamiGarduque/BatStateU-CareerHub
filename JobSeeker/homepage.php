@@ -219,11 +219,8 @@ $num = $stmt->rowCount();
                                             <div class="job-description">
                                                 <p>{$description}</p>
                                             </div>
-                                            <div class="job-description">
-                                                <p>{$job_id}</p>
-                                            </div>
                                             <div class="job-actions">
-                                                <button class="apply-btn">Apply Now</button>
+                                                <a href="applying_job.php?job_id={$job_id}" class="apply-btn">Apply Now</a>
                                                 <button class="view-btn">View Details</button>
                                             </div>
                                         </div>
