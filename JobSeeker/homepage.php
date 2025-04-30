@@ -88,6 +88,7 @@ $num = $stmt->rowCount();
                             <div class="form-group">
                                 <label>Keywords</label>
                                 <input type="text" name="keyword" placeholder="Job title, skills, or keywords" value="<?php echo htmlspecialchars($keyword); ?>">
+                                <button type="submit" class="search-btn">Search</button>
                             </div>
 
                             <div class="form-group">

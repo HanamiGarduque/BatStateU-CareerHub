@@ -13,6 +13,7 @@ class Users
     public $status;
     public $password;
     public $bio;
+    public $title;
 
     public function __construct($db)
     {
@@ -87,11 +88,12 @@ class Users
     public function updateProfile() // done
     {
         try {
-            $stmt = $this->conn->prepare("CALL update_user_info(:user_id, :address, :phone_number, :bio)");
+            $stmt = $this->conn->prepare("CALL update_user_info(:user_id, :address, :phone_number, :bio, :title)");
             $stmt->bindParam(':user_id', $this->user_id, PDO::PARAM_INT);
             $stmt->bindParam(':address', $this->address);
             $stmt->bindParam(':phone_number', $this->phone_number);
             $stmt->bindParam(':bio', $this->bio);
+            $stmt->bindParam(':title', $this->title);
 
             if ($stmt->execute()) {
                 return true;
@@ -110,14 +112,18 @@ class Jobs
     private $conn;
     private $tbl_name = "jobs";
 
-    public $job_id;
     public $title;
+    public $job_category;
     public $company_name;
     public $location;
     public $type;
     public $salary_min;
     public $salary_max;
     public $description;
+    public $responsibilities;
+    public $requirements;
+    public $benefits_perks;
+
 
 
     public function __construct($db)
@@ -143,6 +149,32 @@ class Jobs
         $stmt = $this->conn->prepare("CALL get_job_by_ID(:job_id)");
         $stmt->execute([':job_id' => $job_id]);
         return $stmt;
+    }
+    public function createJob($user_id) // done
+    {
+
+        $stmt = $this->conn->prepare("CALL create_job(:user_id, :title, :job_category, :company_name, :location, :type, :salary_min, :salary_max, :description, :responsibilities, :requirements, :benefits_perks)");
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->bindParam(':title', $this->title);
+        $stmt->bindParam(':job_category', $this->job_category);
+        $stmt->bindParam(':company_name', $this->company_name);
+        $stmt->bindParam(':location', $this->location);
+        $stmt->bindParam(':type', $this->type);
+        $stmt->bindParam(':salary_min', $this->salary_min);
+        $stmt->bindParam(':salary_max', $this->salary_max);
+        $stmt->bindParam(':description', $this->description);
+        $stmt->bindParam(':responsibilities', $this->responsibilities);
+        $stmt->bindParam(':requirements', $this->requirements);
+        $stmt->bindParam(':benefits_perks', $this->benefits_perks);
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            echo "Failed to create job.";
+            return false;
+        }
+
+
+        return $stmt->execute();
     }
 }
 class Bookmarks
@@ -216,14 +248,16 @@ class Employers
         return $stmt;
     }
 }
-class JobApplication {
+class JobApplication
+{
     private $conn;
 
     public function __construct($db)
     {
         $this->conn = $db;
     }
-    public function createApplication($job_id, $user_id, $cover_letter, $resume_path) {
+    public function createApplication($job_id, $user_id, $cover_letter, $resume_path)
+    {
         try {
             $stmt = $this->conn->prepare("CALL CreateApplication(:job_id, :user_id, :cover_letter, :resume_path, :status)");
             $stmt->execute([
@@ -233,14 +267,15 @@ class JobApplication {
                 ':resume_path' => $resume_path,
                 ':status' => 'submitted' // Default status
             ]);
-            
+
             return true;
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage());
             return false;
         }
     }
-    public function hasAlreadyApplied($job_id, $user_id) {
+    public function hasAlreadyApplied($job_id, $user_id)
+    {
         $query = "SELECT COUNT(*) as total FROM applications WHERE job_id = :job_id AND user_id = :user_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':job_id', $job_id);
@@ -249,8 +284,18 @@ class JobApplication {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row['total'] > 0;
     }
+    public function retrieveApplications($user_id)
+    {
+        $stmt = $this->conn->prepare("CALL get_jobseeker_applications(:user_id)");
+        $stmt->execute([':user_id' => $user_id]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);  // Fetch all rows
+        $stmt->closeCursor(); // Very important!
+        return $result;
+    }
 
-    public function updateApplicationStatus($application_id, $status) {
+
+    public function updateApplicationStatus($application_id, $status)
+    {
         try {
             $stmt = $this->conn->prepare("CALL UpdateApplicationStatus(:id, :status)");
             $stmt->bindParam(':id', $application_id);
@@ -261,7 +306,6 @@ class JobApplication {
             return false;
         }
     }
-    
 }
 class Education
 {

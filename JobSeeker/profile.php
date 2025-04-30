@@ -15,7 +15,6 @@ $user_id = $_SESSION['id'];
 
 // Get the statement from the method
 $stmt = $jobseeker->retrieveProfileById($user_id);
-
 $userData = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$userData) {
@@ -92,8 +91,8 @@ $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
                     <div class="profile-header">
                         <div class="profile-info">
                             <h2><?php echo htmlspecialchars($userData['first_name'] . ' ' . $userData['last_name']); ?></h2>
-                            <p class="profile-title">Software Developer</p>
-                            <p class="profile-location"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($userData['address']); ?></p>
+                            <p><?php echo htmlspecialchars($userData['title']); ?></p>
+                            <p class="profile-location"><i class="fas fa-map-marker-alt"></i><?php echo htmlspecialchars($userData['address']); ?></p>
                         </div>
                     </div>
 
@@ -111,6 +110,13 @@ $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
                                     <div class="form-group">
                                         <label>First Name</label>
                                         <input type="text" name="first_name" value="<?php echo htmlspecialchars($userData['first_name']); ?> <?php echo htmlspecialchars($userData['last_name']); ?>" required readonly>
+                                    </div>
+
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Title</label>
+                                        <input type="text" name="title" value="<?php echo htmlspecialchars($userData['title']); ?>" required>
                                     </div>
                                 </div>
 

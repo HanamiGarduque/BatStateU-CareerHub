@@ -21,12 +21,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $address = $_POST["address"];
     $phone = $_POST["phone"];
     $bio = $_POST["bio"];
+    $title = $_POST["title"];
 
     // Assign values to object
     $jobseeker->user_id = $user_id;
     $jobseeker->address = $address;
     $jobseeker->phone_number = $phone;
     $jobseeker->bio = $bio;
+    $jobseeker->title = $title;
 
     if ($jobseeker->updateProfile()) {
         header("Location: profile.php?tab=personal");

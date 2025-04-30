@@ -1,7 +1,12 @@
 <?php
-session_start();
+require_once '../check_session.php';
+require_once '../Database/crud_functions.php';
+require_once '../Database/db_connections.php';
 
-?>
+if (!isEmployer()) {
+    header('Location: /ADMSSYSTEM/logout.php');
+    exit();
+} ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -77,22 +82,70 @@ session_start();
                 </div>
 
                 <div class="create-job-container">
-                    <form id="create-job-form" class="create-job-form">
+                    <?php
+                    $updateStatus = '';
+                    $database = new Database();
+                    $db = $database->getConnect();
+
+                    $user_id = $_SESSION['id'];
+                    $job = new Jobs($db);
+                    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+                        $title = $_POST['title'];
+                        $job_category = $_POST['job_category'];
+                        $company_name = $_POST['company_name'];
+                        $location = $_POST['location'];
+                        $type = $_POST['type'];
+                        $salary_min = $_POST['salary_min'];
+                        $salary_max = $_POST['salary_max'];
+                        $description = $_POST['description'];
+                        $responsibilities = $_POST['responsibilities'];
+                        $requirements = $_POST['requirements'];
+                        $benefits_perks = $_POST['benefits_perks'];
+
+                        $job->title = $title;
+                        $job->job_category = $job_category;
+                        $job->company_name = $company_name;
+                        $job->location = $location;
+                        $job->type = $type;
+                        $job->salary_min = $salary_min;
+                        $job->salary_max = $salary_max;
+                        $job->description = $description;
+                        $job->responsibilities = $responsibilities;
+                        $job->requirements = $requirements;
+                        $job->benefits_perks = $benefits_perks;
+
+                        if ($job->createJob($user_id)) {
+                            $updateStatus = 'success';
+                        } else {
+                            $updateStatus = 'error';
+                        }
+                    }
+                    ?>
+                    <form id="create-job-form" class="create-job-form" method="POST" action="">
                         <!-- Basic Information Section -->
                         <div class="form-section">
                             <h2 class="section-title">Basic Information</h2>
 
                             <div class="form-row">
+
                                 <div class="form-group">
                                     <label for="job-title">Job Title <span class="required">*</span></label>
-                                    <input type="text" id="job-title" name="job-title" required>
+                                    <input type="text" id="job-title" name="title" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+
+                                <div class="form-group">
+                                    <label for="company_name">Company Name <span class="required">*</span></label>
+                                    <input type="text" id="company_name" name="company_name" required>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="job-type">Job Type <span class="required">*</span></label>
-                                    <select id="job-type" name="job-type" required>
+                                    <select id="job-type" name="type" required>
                                         <option value="full-time">Full-time</option>
                                         <option value="part-time">Part-time</option>
                                         <option value="contract">Contract</option>
@@ -104,7 +157,7 @@ session_start();
 
                                 <div class="form-group">
                                     <label for="job-category">Job Category <span class="required">*</span></label>
-                                    <select id="job-category" name="job-category" required>
+                                    <select id="job-category" name="job_category" required>
                                         <option value="technology">Information Technology</option>
                                         <option value="marketing">Marketing</option>
                                         <option value="design">Design</option>
@@ -122,20 +175,20 @@ session_start();
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="job-location">Location <span class="required">*</span></label>
-                                    <input type="text" id="job-location" name="job-location" required>
+                                    <input type="text" id="job-location" name="location" required>
                                 </div>
 
 
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="salary-min">Minimum Salary (₱)</label>
-                                        <input type="number" id="salary-min" name="salary-min" placeholder="e.g., 25000">
+                                        <input type="number" id="salary-min" name="salary_min" placeholder="e.g., 25000">
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="salary-max">Maximum Salary (₱)</label>
-                                    <input type="number" id="salary-max" name="salary-max" placeholder="e.g., 35000">
+                                    <input type="number" id="salary-max" name="salary_max" placeholder="e.g., 35000">
                                 </div>
 
 
@@ -147,38 +200,64 @@ session_start();
 
                                 <div class="form-group">
                                     <label for="job-description">Job Description <span class="required">*</span></label>
-                                    
-                                    <textarea id="job-description" name="job-description" rows="6" required></textarea>
+
+                                    <textarea id="job-description" name="description" rows="6" required></textarea>
                                     <p class="form-help-text">Provide a detailed description of the job, including the role's purpose and how it fits within the company.</p>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="job-responsibilities">Responsibilities <span class="required">*</span></label<>
-                                    <textarea id="job-responsibilities" name="job-responsibilities" rows="6" required></textarea>
-                                    <p class="form-help-text">List the key responsibilities and duties of the role.</p>
+                                        <textarea id="job-responsibilities" name="responsibilities" rows="6" required></textarea>
+                                        <p class="form-help-text">List the key responsibilities and duties of the role.</p>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="job-requirements">Requirements <span class="required">*</span></label>                                
-                                    <textarea id="job-requirements" name="job-requirements" rows="6" required></textarea>
+                                    <label for="job-requirements">Requirements <span class="required">*</span></label>
+                                    <textarea id="job-requirements" name="requirements" rows="6" required></textarea>
                                     <p class="form-help-text">Specify the qualifications, skills, and experience required for the position.</p>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="job-benefits">Benefits & Perks</label>
-                                    <textarea id="job-benefits" name="job-benefits" rows="4"></textarea>
+                                    <textarea id="job-benefits" name="benefits_perks" rows="4"></textarea>
                                     <p class="form-help-text">Highlight the benefits and perks offered with this position.</p>
                                 </div>
                             </div>
 
                             <div class="create-job-actions">
-                        <button class="create-job-btn"><i class="fas fa-paper-plane"></i> Publish Job</button>
-                    </div>
+                                <button class="create-job-btn"><i class="fas fa-paper-plane"></i> Publish Job</button>
+                            </div>
                     </form>
                 </div>
             </div>
         </main>
     </div>
+
+    <?php if ($updateStatus === 'success'): ?>
+    <script>
+      Swal.fire({
+        title: 'Job Added',
+        text: 'Your job posting has been added successfully.',
+        icon: 'success',
+        confirmButtonColor: '#c41e3a'
+      }).then(() => {
+        window.location.href = 'job_postings.php';
+      });
+    </script>
+  <?php elseif ($updateStatus === 'error'): ?>
+    <script>
+      Swal.fire({
+        title: 'Error!',
+        text: 'Job posting error. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'Try Again',
+        background: '#fff',
+        backdrop: true,
+      }).then(() => {
+        window.location.href = 'job_postings.php';
+      });
+    </script>
+  <?php endif; ?>
 
 </body>
 
