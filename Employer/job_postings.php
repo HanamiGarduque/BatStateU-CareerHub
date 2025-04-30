@@ -4,9 +4,14 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isEmployer()) {
-  header('Location: /ADMSSYSTEM/logout.php'); 
+  header('Location: /ADMSSYSTEM/logout.php');
   exit();
 }
+
+$database = new Database();
+$db = $database->getConnect();
+$job = new Jobs($db);
+$application = new JobApplication($db);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -87,12 +92,6 @@ if (!isEmployer()) {
 
         <!-- Job Postings Filter -->
         <div class="job-postings-filter">
-          <div class="filter-tabs">
-            <button class="filter-tab active" data-filter="all">All Jobs (24)</button>
-            <button class="filter-tab" data-filter="active">Active (18)</button>
-            <button class="filter-tab" data-filter="expired">Expired (3)</button>
-          </div>
-
           <div class="filter-options">
             <select class="sort-select">
               <option value="newest">Newest First</option>
@@ -107,191 +106,69 @@ if (!isEmployer()) {
 
         <!-- Job Postings List -->
         <div class="job-postings-list">
-          <!-- Job Posting Item 1 -->
-          <div class="job-posting-item">
-            <div class="job-posting-main">
-              <div class="job-posting-info">
-                <h3 class="job-title">Senior Web Developer</h3>
-                <div class="job-meta">
-                  <div class="meta-item"><i class="fas fa-map-marker-alt"></i> Batangas City</div>
-                  <div class="meta-item"><i class="fas fa-briefcase"></i> Full-time</div>
-                  <div class="meta-item"><i class="fas fa-money-bill-wave"></i> ₱50,000 - ₱70,000</div>
-                  <div class="meta-item"><i class="fas fa-calendar"></i> Posted on May 15, 2023</div>
-                  <div class="meta-item"><i class="fas fa-clock"></i> Expires on June 15, 2023</div>
-                </div>
-              </div>
+          <?php
+          $user_id = $_SESSION['id'];
+          $results = $job->retrieveJobs($user_id);
 
-              <div class="job-posting-stats">
-                <div class="job-stat">
-                  <span class="stat-value">12</span>
-                  <span class="stat-label">Applications</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">5</span>
-                  <span class="stat-label">Interviews</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">2</span>
-                  <span class="stat-label">Shortlisted</span>
-                </div>
-              </div>
+          if (count($results) > 0) {
+            foreach ($results as $row) {
+              $jobId = $row['job_id'];
 
-              <div class="job-posting-actions">
-                <button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button>
-                <button class="action-btn edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Delete</button>
-              </div>
-            </div>
-          </div>
+              // Call the procedure only once for each status
+              $submittedData = $application->retrieveNoOfApplications('submitted', $jobId);
+              $interviewData = $application->retrieveNoOfApplications('interview', $jobId);
+              $shortlistedData = $application->retrieveNoOfApplications('shortlisted', $jobId);
 
-          <!-- Job Posting Item 2 -->
-          <div class="job-posting-item">
-            <div class="job-posting-main">
-              <div class="job-posting-info">
-                <h3 class="job-title">HR Manager</h3>
-                <div class="job-meta">
-                  <div class="meta-item"><i class="fas fa-map-marker-alt"></i> Lipa City</div>
-                  <div class="meta-item"><i class="fas fa-briefcase"></i> Full-time</div>
-                  <div class="meta-item"><i class="fas fa-money-bill-wave"></i> ₱40,000 - ₱55,000</div>
-                  <div class="meta-item"><i class="fas fa-calendar"></i> Posted on May 12, 2023</div>
-                  <div class="meta-item"><i class="fas fa-clock"></i> Expires on June 12, 2023</div>
-                </div>
-              </div>
+              $applicationCount = $submittedData['application_count'] ?? 0;
+              $interviewCount = $interviewData['application_count'] ?? 0;
+              $shortlistedCount = $shortlistedData['application_count'] ?? 0;
+          ?>
+              <div class="job-posting-item"
+                data-date="<?php echo $row['date_posted']; ?>"
+                data-title="<?php echo htmlspecialchars($row['title']); ?>"
+                data-applications="<?php echo $applicationCount; ?>">
 
-              <div class="job-posting-stats">
-                <div class="job-stat">
-                  <span class="stat-value">8</span>
-                  <span class="stat-label">Applications</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">3</span>
-                  <span class="stat-label">Interviews</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">1</span>
-                  <span class="stat-label">Shortlisted</span>
-                </div>
-              </div>
+                <div class="job-posting-main">
+                  <div class="job-posting-info">
+                    <h3 class="job-title"><?php echo htmlspecialchars($row['title']); ?></h3>
+                    <div class="job-meta">
+                      <div class="meta-item"><i class="fas fa-map-marker-alt"></i><?php echo htmlspecialchars($row['location']); ?></div>
+                      <div class="meta-item"><i class="fas fa-briefcase"></i><?php echo htmlspecialchars($row['type']); ?></div>
+                      <div class="meta-item"><i class="fas fa-money-bill-wave"></i><?php echo htmlspecialchars($row['salary_min'] . ' - ' . $row['salary_max']); ?></div>
+                      <div class="meta-item"><i class="fas fa-calendar"></i><?php echo date("F j, Y", strtotime($row['date_posted'])); ?></div>
+                    </div>
+                  </div>
 
-              <div class="job-posting-actions">
-                <button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button>
-                <button class="action-btn edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Delete</button>
-              </div>
-            </div>
-          </div>
+                  <div class="job-posting-stats">
+                    <div class="job-stat">
+                      <span class="stat-value"><?php echo $applicationCount; ?></span>
+                      <span class="stat-label">Applications</span>
+                    </div>
+                    <div class="job-stat">
+                      <span class="stat-value"><?php echo $interviewCount; ?></span>
+                      <span class="stat-label">Interviews</span>
+                    </div>
+                    <div class="job-stat">
+                      <span class="stat-value"><?php echo $shortlistedCount; ?></span>
+                      <span class="stat-label">Shortlisted</span>
+                    </div>
+                  </div>
 
-          <!-- Job Posting Item 3 -->
-          <div class="job-posting-item">
-            <div class="job-posting-main">
-              <div class="job-posting-info">
-                <h3 class="job-title">Marketing Specialist</h3>
-                <div class="job-meta">
-                  <div class="meta-item"><i class="fas fa-map-marker-alt"></i> Batangas City</div>
-                  <div class="meta-item"><i class="fas fa-briefcase"></i> Full-time</div>
-                  <div class="meta-item"><i class="fas fa-money-bill-wave"></i> ₱35,000 - ₱45,000</div>
-                  <div class="meta-item"><i class="fas fa-calendar"></i> Posted on May 10, 2023</div>
-                  <div class="meta-item"><i class="fas fa-clock"></i> Expires on June 10, 2023</div>
+                  <div class="job-posting-actions">
+                    <button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button>
+                    <button class="action-btn edit-btn"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Delete</button>
+                  </div>
                 </div>
               </div>
-
-              <div class="job-posting-stats">
-                <div class="job-stat">
-                  <span class="stat-value">15</span>
-                  <span class="stat-label">Applications</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">7</span>
-                  <span class="stat-label">Interviews</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">3</span>
-                  <span class="stat-label">Shortlisted</span>
-                </div>
-              </div>
-
-              <div class="job-posting-actions">
-                <button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button>
-                <button class="action-btn edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Delete</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Job Posting Item 4 (Draft) -->
-          <div class="job-posting-item draft">
-            <div class="job-posting-main">
-              <div class="job-posting-info">
-                <h3 class="job-title">Customer Service Representative</h3>
-                <div class="job-meta">
-                  <div class="meta-item"><i class="fas fa-map-marker-alt"></i> Santo Tomas</div>
-                  <div class="meta-item"><i class="fas fa-briefcase"></i> Part-time</div>
-                  <div class="meta-item"><i class="fas fa-money-bill-wave"></i> ₱18,000 - ₱25,000</div>
-                  <div class="meta-item"><i class="fas fa-file-alt"></i> <span class="status-badge draft">Draft</span></div>
-                  <div class="meta-item"><i class="fas fa-calendar"></i> Last edited on May 8, 2023</div>
-                </div>
-              </div>
-
-              <div class="job-posting-stats">
-                <div class="job-stat">
-                  <span class="stat-value">-</span>
-                  <span class="stat-label">Applications</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">-</span>
-                  <span class="stat-label">Interviews</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">-</span>
-                  <span class="stat-label">Shortlisted</span>
-                </div>
-              </div>
-
-              <div class="job-posting-actions">
-                <button class="action-btn view-btn"><i class="fas fa-eye"></i> Preview</button>
-                <button class="action-btn edit-btn"><i class="fas fa-edit"></i> Edit</button>
-                <button class="action-btn publish-btn"><i class="fas fa-paper-plane"></i> Publish</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Job Posting Item 5 (Expired) -->
-          <div class="job-posting-item expired">
-            <div class="job-posting-main">
-              <div class="job-posting-info">
-                <h3 class="job-title">Graphic Designer</h3>
-                <div class="job-meta">
-                  <div class="meta-item"><i class="fas fa-map-marker-alt"></i> Batangas City</div>
-                  <div class="meta-item"><i class="fas fa-briefcase"></i> Full-time</div>
-                  <div class="meta-item"><i class="fas fa-money-bill-wave"></i> ₱25,000 - ₱35,000</div>
-                  <div class="meta-item"><i class="fas fa-file-alt"></i> <span class="status-badge expired">Expired</span></div>
-                  <div class="meta-item"><i class="fas fa-calendar"></i> Expired on May 1, 2023</div>
-                </div>
-              </div>
-
-              <div class="job-posting-stats">
-                <div class="job-stat">
-                  <span class="stat-value">6</span>
-                  <span class="stat-label">Applications</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">2</span>
-                  <span class="stat-label">Interviews</span>
-                </div>
-                <div class="job-stat">
-                  <span class="stat-value">1</span>
-                  <span class="stat-label">Shortlisted</span>
-                </div>
-              </div>
-
-              <div class="job-posting-actions">
-                <button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button>
-                <button class="action-btn renew-btn"><i class="fas fa-sync"></i> Renew</button>
-                <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Delete</button>
-              </div>
-            </div>
-          </div>
+          <?php
+            }
+          } else {
+            echo "<p>No applications found.</p>";
+          }
+          ?>
         </div>
+
 
         <!-- Pagination -->
         <div class="pagination">
@@ -307,60 +184,59 @@ if (!isEmployer()) {
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Filter tabs functionality
-      const filterTabs = document.querySelectorAll('.filter-tab');
-      const jobItems = document.querySelectorAll('.job-posting-item');
+      const sortSelect = document.querySelector('.sort-select');
+      const jobList = document.querySelector('.job-postings-list');
 
-      filterTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-          // Remove active class from all tabs
-          filterTabs.forEach(t => t.classList.remove('active'));
+      sortSelect.addEventListener('change', function() {
+        const items = Array.from(jobList.querySelectorAll('.job-posting-item'));
 
-          // Add active class to clicked tab
-          this.classList.add('active');
-
-          // Get filter value
-          const filter = this.getAttribute('data-filter');
-
-          // Show/hide job items based on filter
-          jobItems.forEach(item => {
-            if (filter === 'all') {
-              item.style.display = 'block';
-            } else if (filter === 'draft' && item.classList.contains('draft')) {
-              item.style.display = 'block';
-            } else if (filter === 'expired' && item.classList.contains('expired')) {
-              item.style.display = 'block';
-            } else if (filter === 'active' && !item.classList.contains('draft') && !item.classList.contains('expired')) {
-              item.style.display = 'block';
-            } else {
-              item.style.display = 'none';
-            }
-          });
+        const sorted = items.sort((a, b) => {
+          switch (this.value) {
+            case 'newest':
+              return new Date(b.dataset.date) - new Date(a.dataset.date);
+            case 'oldest':
+              return new Date(a.dataset.date) - new Date(b.dataset.date);
+            case 'title-az':
+              return a.dataset.title.localeCompare(b.dataset.title);
+            case 'title-za':
+              return b.dataset.title.localeCompare(a.dataset.title);
+            case 'most-applications':
+              return b.dataset.applications - a.dataset.applications;
+            case 'least-applications':
+              return a.dataset.applications - b.dataset.applications;
+            default:
+              return 0;
+          }
         });
+
+        // Clear and re-append sorted items
+        jobList.innerHTML = '';
+        sorted.forEach(item => jobList.appendChild(item));
       });
+    });
 
-      // Delete job confirmation
-      const deleteButtons = document.querySelectorAll('.delete-btn');
 
-      deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          Swal.fire({
-            title: 'Delete Job Posting',
-            text: 'Are you sure you want to delete this job posting? This action cannot be undone.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#c41e3a',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, delete it'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              Swal.fire(
-                'Deleted!',
-                'The job posting has been deleted.',
-                'success'
-              );
-            }
-          });
+    // Delete job confirmation
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        Swal.fire({
+          title: 'Delete Job Posting',
+          text: 'Are you sure you want to delete this job posting? This action cannot be undone.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#c41e3a',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Yes, delete it'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            Swal.fire(
+              'Deleted!',
+              'The job posting has been deleted.',
+              'success'
+            );
+          }
         });
       });
     });

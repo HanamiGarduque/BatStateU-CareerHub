@@ -16,7 +16,7 @@ $jobs = new Jobs($db);
 $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
 
 // Retrieve jobs based on the keyword
-$stmt = $jobs->retrieveJobs($keyword);
+$stmt = $jobs->searchJobs($keyword);
 $num = $stmt->rowCount();
 ?>
 <!DOCTYPE html>
@@ -178,7 +178,7 @@ $num = $stmt->rowCount();
                     <div class="job-listings">
                         <div class="job-listings-header">
                             <h3>120 Jobs Found</h3>
-<div class="sort-options">
+                            <div class="sort-options">
                                 <label>Sort by:</label>
                                 <select>
                                     <option value="relevance">Relevance</option>
@@ -190,22 +190,22 @@ $num = $stmt->rowCount();
                         </div>
 
                         <div class="jobs-list">
-    <?php
-    if ($num > 0) {
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            extract($row);
+                            <?php
+                            if ($num > 0) {
+                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    extract($row);
 
-            // Get user ID (from session ideally)
-            $user_id = 1;
+                                    // Get user ID (from session ideally)
+                                    $user_id = 1;
 
-            // Instantiate bookmark handler
-            $bookmark = new Bookmarks($db);
+                                    // Instantiate bookmark handler
+                                    $bookmark = new Bookmarks($db);
 
-            // Check if the current job is bookmarked
-            $isSaved = $bookmark->isBookmarked($user_id, $job_id);
-            $savedClass = $isSaved ? 'saved' : '';
+                                    // Check if the current job is bookmarked
+                                    $isSaved = $bookmark->isBookmarked($user_id, $job_id);
+                                    $savedClass = $isSaved ? 'saved' : '';
 
-            echo <<<HTML
+                                    echo <<<HTML
                 <div class="job-card">
                     <div class="job-header">
                         <div class="company-logo"></div>
@@ -224,76 +224,77 @@ $num = $stmt->rowCount();
                         <p>{$description}</p>
                     </div>
                     <div class="job-actions">
-                        <a href="applying_job.php?job_id={$job_id}" class="apply-btn">Apply Now</a>
-                        <button class="view-btn">View Details</button>
+                    <a href="applying_job.php?job_id={$job_id}" class="apply-btn">Apply Now</a>
+                    <button class="view-btn">View Details</button>
                     </div>
                 </div>
             HTML;
-        }
-    } else {
-        echo "<p>No jobs found.</p>";
-    }
-    ?>
-</div>
-
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    document.querySelectorAll('.save-job').forEach(button => {
-                                        button.addEventListener('click', function() {
-                                            const jobId = this.getAttribute('data-job-id');
-
-                                            fetch('bookmark_job.php', {
-                                                    method: 'POST',
-                                                    headers: {
-                                                        'Content-Type': 'application/x-www-form-urlencoded',
-                                                    },
-                                                    body: 'job_id=' + jobId
-                                                })
-                                                .then(response => response.text())
-                                                .then(data => {
-                                                    if (data === 'saved') {
-                                                        this.classList.add('saved');
-                                                        Swal.fire({
-                                                            icon: 'success',
-                                                            title: 'Job bookmarked!',
-                                                            showConfirmButton: false,
-                                                            timer: 1500
-                                                        });
-
-                                                    } else if (data === 'unsaved') {
-                                                        this.classList.remove('saved');
-                                                        alert('Bookmark removed!');
-                                                    } else {
-                                                        alert('Something went wrong.');
-                                                    }
-                                                });
-                                        });
-                                    });
-                                });
-                            </script>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    const searchInput = document.querySelector('input[name="keyword"]');
-
-                                    
-                                    searchInput.focus();
-                                    const value = searchInput.value;
-                                    searchInput.value = ''; 
-
-                                    searchInput.value = value; 
-
-                                    searchInput.addEventListener('input', function () {
-                                        if (this.value.trim() === '') {
-                                            window.location.href = 'homepage.php';
-                                        }
-                                    });
-                                });
-                            </script>
+                                }
+                            } else {
+                                echo "<p>No jobs found.</p>";
+                            }
+                            ?>
                         </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                document.querySelectorAll('.save-job').forEach(button => {
+                                    button.addEventListener('click', function() {
+                                        const jobId = this.getAttribute('data-job-id');
+
+                                        fetch('bookmark_job.php', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                                },
+                                                body: 'job_id=' + jobId
+                                            })
+                                            .then(response => response.text())
+                                            .then(data => {
+                                                if (data === 'saved') {
+                                                    this.classList.add('saved');
+                                                    Swal.fire({
+                                                        icon: 'success',
+                                                        title: 'Job bookmarked!',
+                                                        showConfirmButton: false,
+                                                        timer: 1500
+                                                    });
+
+                                                } else if (data === 'unsaved') {
+                                                    this.classList.remove('saved');
+                                                    alert('Bookmark removed!');
+                                                } else {
+                                                    alert('Something went wrong.');
+                                                }
+                                            });
+                                    });
+                                });
+                            });
+                        </script>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const searchInput = document.querySelector('input[name="keyword"]');
+
+
+                                searchInput.focus();
+                                const value = searchInput.value;
+                                searchInput.value = '';
+
+                                searchInput.value = value;
+
+                                searchInput.addEventListener('input', function() {
+                                    if (this.value.trim() === '') {
+                                        window.location.href = 'homepage.php';
+                                    }
+                                });
+                            });
+                        </script>
                     </div>
                 </div>
             </div>
-        </main>
+    </div>
+    </main>
     </div>
 </body>
+
 </html>

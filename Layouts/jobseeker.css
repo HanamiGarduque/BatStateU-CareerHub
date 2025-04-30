@@ -409,6 +409,7 @@ body {
   background-color: #c41e3a;
   color: white;
   border: none;
+  text-decoration: none;
   flex: 1;
 }
 

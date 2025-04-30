@@ -131,16 +131,25 @@ class Jobs
         $this->conn = $db;
     }
 
-    public function retrieveJobs($keyword = '')
+    public function retrieveJobs($user_id) // done
     {
-        if (!empty($keyword)) {
-            $query = "SELECT * FROM " . $this->tbl_name . " WHERE title LIKE :keyword OR description LIKE :keyword";
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindValue(':keyword', '%' . $keyword . '%');
-        } else {
-            $query = "SELECT * FROM " . $this->tbl_name;
-            $stmt = $this->conn->prepare($query);
-        }
+        $stmt = $this->conn->prepare("CALL get_jobs(:user_id)");
+        $stmt->execute([':user_id' => $user_id]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
+    }
+    public function countAllJobs()
+    {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM " . $this->tbl_name);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['total'];
+    }
+    public function searchJobs($keyword = '')
+    {
+        $stmt = $this->conn->prepare("CALL search_jobs(:keyword)");
+        $stmt->bindValue(':keyword', $keyword); // pass empty string '' to get all
         $stmt->execute();
         return $stmt;
     }
@@ -306,11 +315,22 @@ class JobApplication
             return false;
         }
     }
+    public function retrieveNoOfApplications($status, $job_id)
+    {
+        $stmt = $this->conn->prepare("CALL get_no_of_applications(:status, :job_id)");
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':job_id', $job_id);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor(); // Very important!
+        return $result;
+
+       
+    }
 }
 class Education
 {
     private $conn;
-    private $tbl_name = "Educations";
 
     public $id;
     public $user_id;

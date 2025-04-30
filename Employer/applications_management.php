@@ -14,7 +14,6 @@ $db = $database->getConnect();
 $application = new JobApplication($db);
 $employer = new Employers($db);
 
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,20 +101,17 @@ $employer = new Employers($db);
         ?>
         <!-- Applications List -->
         <div class="applications-list">
-          <!-- Application Item 1 -->
           <?php
-          $user_id = $_SESSION['id'];
-
-          $results = $application->retrieveApplications($user_id);
+          $emp_id = $_SESSION['id'];
+          $results = $application->retrieveApplications($emp_id);
           $num = count($results);
 
           if ($num > 0) {
             foreach ($results as $row) {
-              // Open HTML block
+              $jobseeker_id = $row['user_id'];
           ?>
               <div class="application-item">
                 <div class="application-main">
-
                   <div class="candidate-info">
                     <div class="candidate-details">
                       <h3 class="candidate-name"><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></h3>
@@ -127,9 +123,9 @@ $employer = new Employers($db);
                     </div>
                   </div>
                   <div class="job-applied">
-                    <h4>Senior Web Developer</h4>
-                    <p>Tech Solutions Inc.</p>
-                    <span class="application-status-badge interview">Interview Scheduled</span>
+                    <h4><?php echo htmlspecialchars($row['job_title']); ?></h4>
+                    <p><?php echo htmlspecialchars($row['company_name']); ?></p>
+                    <span class="application-status-badge interview"><?php echo htmlspecialchars($row['status']); ?></span>
                   </div>
 
                   <div class="application-actions">
@@ -144,135 +140,162 @@ $employer = new Employers($db);
                     <div class="profile-section">
                       <h4>Skills</h4>
                       <div class="skills-list">
-                        <span class="skill-tag">JavaScript</span>
-                        <span class="skill-tag">React</span>
-                        <span class="skill-tag">Node.js</span>
-                        <span class="skill-tag">PHP</span>
-                        <span class="skill-tag">MySQL</span>
-                        <span class="skill-tag">HTML/CSS</span>
-                        <span class="skill-tag">Git</span>
+                        <?php
+                        
+                        $skillsClass = new Skills($db);
+                        $skills = $skillsClass->retrieveSkills($jobseeker_id);
+
+                  
+                        foreach ($skills as $skill) {
+                          echo "<span class='skill-tag'>" . htmlspecialchars($skill['skill_name']) . "</span>";
+                        }
+                        ?>
                       </div>
                     </div>
+
                     <div class="profile-section">
                       <h4>Experience</h4>
-                      <div class="experience-item">
-                        <h5>Senior Frontend Developer</h5>
-                        <p>Web Solutions Co. | 2020 - Present</p>
-                        <p>Led the frontend development team in creating responsive web applications using React and Redux. Implemented best practices for code quality and performance optimization.</p>
-                      </div>
-                      <div class="experience-item">
-                        <h5>Web Developer</h5>
-                        <p>Digital Creations Inc. | 2018 - 2020</p>
-                        <p>Developed and maintained client websites using PHP, JavaScript, and MySQL. Collaborated with designers to implement responsive designs.</p>
-                      </div>
+
+                      <?php
+                      $experience = new Experiences($db);
+                      $stmt = $experience->retrieveExperiences($jobseeker_id);
+                      $experiences = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                      $stmt->closeCursor();
+
+                      if ($experiences) {
+                        foreach ($experiences as $exp) {
+                          if (!empty($exp['job_title']) && !empty($exp['company_name'])) {
+                            echo '<div class="experience-item">';
+                            echo '<h5>' . htmlspecialchars($exp['job_title']) . '</h5>';
+                            echo '<p>' . htmlspecialchars($exp['company_name']) . ' | ' .
+                              htmlspecialchars($exp['start_date']) . ' - ' .
+                              htmlspecialchars($exp['end_date']) . '</p>';
+                            echo '</div>';
+                          }
+                        }
+                      } else {
+                        echo '<p>No experience available.</p>';
+                      }
+                      ?>
                     </div>
+
 
                     <div class="profile-section">
                       <h4>Education</h4>
-                      <div class="education-item">
-                        <h5>BS Computer Science</h5>
-                        <p>Batangas State University | 2014 - 2018</p>
-                      </div>
+                      <?php
+
+                      $education = new Education($db);
+                      $stmt = $education->retrieveEducationalBackground($jobseeker_id);
+                      $educations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                      $stmt->closeCursor();
+
+                      if ($educations) {
+                        foreach ($educations as $edu) {
+                          if (!empty($edu['degree']) && !empty($edu['institution'])) {
+                            echo '<div class="education-item">';
+                            echo '<h5>' . htmlspecialchars($edu['degree']) . '</h5>';
+                            echo '<p>' . htmlspecialchars($edu['institution']) . ' | ' .
+                              htmlspecialchars($edu['start_date']) . ' - ' .
+                              htmlspecialchars($edu['end_date']) . '</p>';
+                            echo '</div>';
+                          }
+                        }
+                      } else {
+                        echo '<p>No education details available.</p>';
+                      }
+                      ?>
                     </div>
-                  </div>
 
-                  <div class="application-timeline">
-                    <h4>Application Timeline</h4>
-                    <div class="timeline">
-                      <div class="timeline-item active">
-                        <div class="timeline-icon"><i class="fas fa-check"></i></div>
-                        <div class="timeline-content">
-                          <h4>Application Received</h4>
-                          <p>May 15, 2023 at 10:30 AM</p>
+
+
+                    <div class="application-timeline">
+                      <h4>Application Timeline</h4>
+                      <h4>Application Timeline</h4>
+                      <div class="timeline">
+                        <div class="timeline-item active">
+                          <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                          <div class="timeline-content">
+                            <h4>Application Received</h4>
+                            <p>May 15, 2023 at 10:30 AM</p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div class="timeline-item active">
-                        <div class="timeline-icon"><i class="fas fa-check"></i></div>
-                        <div class="timeline-content">
-                          <h4>Resume Screened</h4>
-                          <p>May 16, 2023 at 2:15 PM</p>
+                        <div class="timeline-item active">
+                          <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                          <div class="timeline-content">
+                            <h4>Resume Screened</h4>
+                            <p>May 16, 2023 at 2:15 PM</p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div class="timeline-item active">
-                        <div class="timeline-icon"><i class="fas fa-check"></i></div>
-                        <div class="timeline-content">
-                          <h4>Interview Scheduled</h4>
-                          <p>May 18, 2023 at 9:45 AM</p>
-                          <div class="interview-details">
-                            <p><strong>Date:</strong> May 22, 2023</p>
-                            <p><strong>Time:</strong> 10:00 AM - 11:30 AM</p>
-                            <p><strong>Location:</strong> Online via Zoom</p>
-                            <p><strong>Interviewer:</strong> Maria Santos, HR Manager</p>
+                        <div class="timeline-item active">
+                          <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                          <div class="timeline-content">
+                            <h4>Interview Scheduled</h4>
+                            <p>May 18, 2023 at 9:45 AM</p>
+                            <div class="interview-details">
+                              <p><strong>Date:</strong> May 22, 2023</p>
+                              <p><strong>Time:</strong> 10:00 AM - 11:30 AM</p>
+                              <p><strong>Location:</strong> Online via Zoom</p>
+                              <p><strong>Interviewer:</strong> Maria Santos, HR Manager</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="timeline-item">
+                          <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
+                          <div class="timeline-content">
+                            <h4>Technical Interview</h4>
+                            <p>Pending</p>
+                          </div>
+                        </div>
+
+                        <div class="timeline-item">
+                          <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
+                          <div class="timeline-content">
+                            <h4>Final Decision</h4>
+                            <p>Pending</p>
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      <div class="timeline-item">
-                        <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
-                        <div class="timeline-content">
-                          <h4>Technical Interview</h4>
-                          <p>Pending</p>
+                    <div class="application-notes">
+                      <h4>Notes</h4>
+                      <div class="notes-list">
+                        <div class="note-item">
+                          <div class="note-header">
+                            <p class="note-author">Maria Santos, HR Manager</p>
+                            <p class="note-date">May 16, 2023 at 2:15 PM</p>
+                          </div>
+                          <p class="note-content">Strong candidate with relevant experience. Resume shows good progression and skill development. Recommend scheduling an initial interview.</p>
                         </div>
                       </div>
 
-                      <div class="timeline-item">
-                        <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
-                        <div class="timeline-content">
-                          <h4>Final Decision</h4>
-                          <p>Pending</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="application-notes">
-                    <h4>Notes</h4>
-                    <div class="notes-list">
-                      <div class="note-item">
-                        <div class="note-header">
-                          <p class="note-author">Maria Santos, HR Manager</p>
-                          <p class="note-date">May 16, 2023 at 2:15 PM</p>
-                        </div>
-                        <p class="note-content">Strong candidate with relevant experience. Resume shows good progression and skill development. Recommend scheduling an initial interview.</p>
+                      <div class="add-note-form">
+                        <textarea placeholder="Add a note about this candidate..."></textarea>
+                        <button class="add-note-btn">Add Note</button>
                       </div>
                     </div>
 
-                    <div class="add-note-form">
-                      <textarea placeholder="Add a note about this candidate..."></textarea>
-                      <button class="add-note-btn">Add Note</button>
+                    <div class="candidate-actions">
+                      <button class="candidate-action-btn"><i class="fas fa-envelope"></i> Email Candidate</button>
+                      <button class="candidate-action-btn"><i class="fas fa-calendar-alt"></i> Schedule Interview</button>
+                      <button class="candidate-action-btn"><i class="fas fa-user-check"></i> Move to Shortlist</button>
+                      <button class="candidate-action-btn reject"><i class="fas fa-times"></i> Reject Application</button>
                     </div>
-                  </div>
-
-                  <div class="candidate-actions">
-                    <button class="candidate-action-btn"><i class="fas fa-envelope"></i> Email Candidate</button>
-                    <button class="candidate-action-btn"><i class="fas fa-calendar-alt"></i> Schedule Interview</button>
-                    <button class="candidate-action-btn"><i class="fas fa-user-check"></i> Move to Shortlist</button>
-                    <button class="candidate-action-btn reject"><i class="fas fa-times"></i> Reject Application</button>
                   </div>
                 </div>
               </div>
-          <?php
+              
+            <?php
             }
           } else {
             echo "<p>No applications found.</p>";
           }
-          ?>
-
-
-
-          <!-- Pagination -->
-          <div class="pagination">
-            <button class="pagination-btn prev"><i class="fas fa-chevron-left"></i></button>
-            <button class="pagination-btn active">1</button>
-            <button class="pagination-btn">2</button>
-            <button class="pagination-btn">3</button>
-            <button class="pagination-btn">4</button>
-            <button class="pagination-btn">5</button>
-            <button class="pagination-btn next"><i class="fas fa-chevron-right"></i></button>
-          </div>
-        </div>
+            ?>
+              </div>
+              
     </main>
   </div>
 

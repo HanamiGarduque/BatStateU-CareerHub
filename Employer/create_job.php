@@ -142,32 +142,32 @@ if (!isEmployer()) {
                                 </div>
                             </div>
 
-                            <div class="form-row">
+                            <div class="form-row">                          
                                 <div class="form-group">
                                     <label for="job-type">Job Type <span class="required">*</span></label>
                                     <select id="job-type" name="type" required>
-                                        <option value="full-time">Full-time</option>
-                                        <option value="part-time">Part-time</option>
-                                        <option value="contract">Contract</option>
+                                        <option value="Full-time">Full-time</option>
+                                        <option value="Part-time">Part-time</option>
+                                        <option value="Contract">Contract</option>
                                         <option value="internship">Internship</option>
-                                        <option value="temporary">Temporary</option>
-                                        <option value="remote">Remote</option>
+                                        <option value="Temporary">Temporary</option>
+                                        <option value="Remote">Remote</option>
                                     </select>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="job-category">Job Category <span class="required">*</span></label>
                                     <select id="job-category" name="job_category" required>
-                                        <option value="technology">Information Technology</option>
-                                        <option value="marketing">Marketing</option>
-                                        <option value="design">Design</option>
-                                        <option value="finance">Finance</option>
-                                        <option value="healthcare">Healthcare</option>
-                                        <option value="education">Education</option>
-                                        <option value="engineering">Engineering</option>
-                                        <option value="customer-service">Customer Service</option>
-                                        <option value="administrative">Administrative</option>
-                                        <option value="other">Other</option>
+                                        <option value="Technology">Information Technology</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Design">Design</option>
+                                        <option value="Dinance">Finance</option>
+                                        <option value="Healthcare">Healthcare</option>
+                                        <option value="Education">Education</option>
+                                        <option value="Engineering">Engineering</option>
+                                        <option value="Customer-service">Customer Service</option>
+                                        <option value="Administrative">Administrative</option>
+                                        <option value="Other">Other</option>
                                     </select>
                                 </div>
                             </div>
