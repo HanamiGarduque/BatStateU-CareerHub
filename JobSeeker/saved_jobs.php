@@ -1,6 +1,43 @@
 <?php
 session_start();
+require_once __DIR__ . '/../Database/db_connections.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$database = new Database();
+$conn = $database->getConnect();
+
+// Fetch saved jobs with job details
+try {
+    $user_id = $_SESSION['user_id'];
+    $sql = "SELECT sj.saved_jobs_id, sj.saved_date, 
+                   j.job_id, j.title AS job_title, 
+                   j.company_name, j.location, 
+                   j.type AS job_type, 
+                   j.salary_min, j.salary_max
+            FROM saved_jobs sj
+            INNER JOIN jobs j ON sj.job_id = j.job_id
+            WHERE sj.user_id = :user_id";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    $saved_jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $saved_count = count($saved_jobs);
+
+} catch (PDOException $e) {
+    die("Error fetching saved jobs: " . $e->getMessage());
+}
+
+function time_elapsed_string($datetime) {
+
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -33,7 +70,8 @@ session_start();
                     <li>
                         <a href="applications_management.php"><i class="fas fa-file-alt"></i> My Applications</a>
                     </li>
-                    <li class="active">                        <a href="saved_jobs.php"><i class="fas fa-bookmark"></i> Saved Jobs</a>
+                    <li class="active">
+                        <a href="saved_jobs.php"><i class="fas fa-bookmark"></i> Saved Jobs</a>
                     </li>
                     <li class="logout">
                         <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -57,7 +95,7 @@ session_start();
                     </div>
                     <div class="user-profile">
                         <img src="../placeholder.jpg" alt="Profile Picture">
-                        <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'User'; ?></span>
+                        <span>Welcome, <?php echo htmlspecialchars($_SESSION['name'] ?? 'User'); ?></span>
                     </div>
                 </div>
             </header>
@@ -69,7 +107,7 @@ session_start();
                 <!-- Saved Jobs Filter -->
                 <div class="saved-jobs-header">
                     <div class="saved-jobs-count">
-                        <h3>12 Saved Jobs</h3>
+                        <h3><?php echo $saved_count; ?> Saved Jobs</h3>
                     </div>
                     
                     <div class="saved-jobs-actions">
@@ -91,25 +129,32 @@ session_start();
                 
                 <!-- Saved Jobs Grid -->
                 <div class="saved-jobs-grid">
-                    <!-- Saved Job Card 1 -->
-                    <div class="saved-job-card">
+                    <?php foreach ($saved_jobs as $job): ?>
+                    <div class="saved-job-card" data-saved-id="<?php echo $job['saved_jobs_id']; ?>">
                         <div class="saved-job-header">
                             <div class="company-logo"></div>
                             <button class="remove-saved-job"><i class="fas fa-times"></i></button>
                         </div>
                         
                         <div class="saved-job-content">
-                            <h3 class="job-title">Software Developer</h3>
-                            <p class="company-name">Tech Solutions Inc.</p>
+                            <h3 class="job-title"><?php echo htmlspecialchars($job['job_title']); ?></h3>
+                            <p class="company-name"><?php echo htmlspecialchars($job['company_name']); ?></p>
                             
                             <div class="job-details">
-                                <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Batangas City</div>
-                                <div class="job-detail"><i class="fas fa-briefcase"></i> Full-time</div>
-                                <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱30,000 - ₱45,000</div>
+                                <div class="job-detail">
+                                    <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($job['location']); ?>
+                                </div>
+                                <div class="job-detail">
+                                    <i class="fas fa-briefcase"></i> <?php echo htmlspecialchars($job['job_type']); ?>
+                                </div>
+                                <div class="job-detail">
+                                    <i class="fas fa-money-bill-wave"></i> 
+                                    ₱<?php echo number_format($job['salary_min'], 0) ?> - ₱<?php echo number_format($job['salary_max'], 0) ?>
+                                </div>
                             </div>
                             
                             <div class="saved-date">
-                                <i class="fas fa-clock"></i> Saved 2 days ago
+                                <i class="fas fa-clock"></i> Saved <?php echo time_elapsed_string($job['saved_date']); ?>
                             </div>
                             
                             <div class="job-actions">
@@ -118,146 +163,7 @@ session_start();
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Saved Job Card 2 -->
-                    <div class="saved-job-card">
-                        <div class="saved-job-header">
-                            <div class="company-logo"></div>
-                            <button class="remove-saved-job"><i class="fas fa-times"></i></button>
-                        </div>
-                        
-                        <div class="saved-job-content">
-                            <h3 class="job-title">Marketing Specialist</h3>
-                            <p class="company-name">Global Marketing PH</p>
-                            
-                            <div class="job-details">
-                                <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Lipa City</div>
-                                <div class="job-detail"><i class="fas fa-briefcase"></i> Full-time</div>
-                                <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱25,000 - ₱35,000</div>
-                            </div>
-                            
-                            <div class="saved-date">
-                                <i class="fas fa-clock"></i> Saved 3 days ago
-                            </div>
-                            
-                            <div class="job-actions">
-                                <button class="apply-btn">Apply Now</button>
-                                <button class="view-btn">View Details</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Saved Job Card 3 -->
-                    <div class="saved-job-card">
-                        <div class="saved-job-header">
-                            <div class="company-logo"></div>
-                            <button class="remove-saved-job"><i class="fas fa-times"></i></button>
-                        </div>
-                        
-                        <div class="saved-job-content">
-                            <h3 class="job-title">Graphic Designer</h3>
-                            <p class="company-name">Creative Designs Co.</p>
-                            
-                            <div class="job-details">
-                                <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Santo Tomas</div>
-                                <div class="job-detail"><i class="fas fa-briefcase"></i> Full-time</div>
-                                <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱22,000 - ₱30,000</div>
-                            </div>
-                            
-                            <div class="saved-date">
-                                <i class="fas fa-clock"></i> Saved 5 days ago
-                            </div>
-                            
-                            <div class="job-actions">
-                                <button class="apply-btn">Apply Now</button>
-                                <button class="view-btn">View Details</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Saved Job Card 4 -->
-                    <div class="saved-job-card">
-                        <div class="saved-job-header">
-                            <div class="company-logo"></div>
-                            <button class="remove-saved-job"><i class="fas fa-times"></i></button>
-                        </div>
-                        
-                        <div class="saved-job-content">
-                            <h3 class="job-title">Customer Service Representative</h3>
-                            <p class="company-name">Support Solutions</p>
-                            
-                            <div class="job-details">
-                                <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Batangas City</div>
-                                <div class="job-detail"><i class="fas fa-briefcase"></i> Part-time</div>
-                                <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱18,000 - ₱22,000</div>
-                            </div>
-                            
-                            <div class="saved-date">
-                                <i class="fas fa-clock"></i> Saved 1 week ago
-                            </div>
-                            
-                            <div class="job-actions">
-                                <button class="apply-btn">Apply Now</button>
-                                <button class="view-btn">View Details</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Saved Job Card 5 -->
-                    <div class="saved-job-card">
-                        <div class="saved-job-header">
-                            <div class="company-logo"></div>
-                            <button class="remove-saved-job"><i class="fas fa-times"></i></button>
-                        </div>
-                        
-                        <div class="saved-job-content">
-                            <h3 class="job-title">Data Analyst</h3>
-                            <p class="company-name">Tech Insights Inc.</p>
-                            
-                            <div class="job-details">
-                                <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Tanauan</div>
-                                <div class="job-detail"><i class="fas fa-briefcase"></i> Full-time</div>
-                                <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱28,000 - ₱40,000</div>
-                            </div>
-                            
-                            <div class="saved-date">
-                                <i class="fas fa-clock"></i> Saved 1 week ago
-                            </div>
-                            
-                            <div class="job-actions">
-                                <button class="apply-btn">Apply Now</button>
-                                <button class="view-btn">View Details</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Saved Job Card 6 -->
-                    <div class="saved-job-card">
-                        <div class="saved-job-header">
-                            <div class="company-logo"></div>
-                            <button class="remove-saved-job"><i class="fas fa-times"></i></button>
-                        </div>
-                        
-                        <div class="saved-job-content">
-                            <h3 class="job-title">HR Assistant</h3>
-                            <p class="company-name">People First Inc.</p>
-                            
-                            <div class="job-details">
-                                <div class="job-detail"><i class="fas fa-map-marker-alt"></i> Batangas City</div>
-                                <div class="job-detail"><i class="fas fa-briefcase"></i> Full-time</div>
-                                <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱20,000 - ₱25,000</div>
-                            </div>
-                            
-                            <div class="saved-date">
-                                <i class="fas fa-clock"></i> Saved 2 weeks ago
-                            </div>
-                            
-                            <div class="job-actions">
-                                <button class="apply-btn">Apply Now</button>
-                                <button class="view-btn">View Details</button>
-                            </div>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
                 
                 <!-- Pagination -->
@@ -279,32 +185,20 @@ session_start();
             
             viewButtons.forEach(button => {
                 button.addEventListener('click', function() {
-                    // Remove active class from all buttons
                     viewButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Add active class to clicked button
                     this.classList.add('active');
                     
-                    // Change view
                     const view = this.getAttribute('data-view');
-                    if (view === 'grid') {
-                        savedJobsContainer.classList.remove('list-view');
-                        savedJobsContainer.classList.add('grid-view');
-                    } else {
-                        savedJobsContainer.classList.remove('grid-view');
-                        savedJobsContainer.classList.add('list-view');
-                    }
+                    savedJobsContainer.classList.toggle('list-view', view === 'list');
                 });
             });
             
             // Remove saved job
-            const removeButtons = document.querySelectorAll('.remove-saved-job');
-            
-            removeButtons.forEach(button => {
+            document.querySelectorAll('.remove-saved-job').forEach(button => {
                 button.addEventListener('click', function() {
                     const jobCard = this.closest('.saved-job-card');
-                    
-                    // Confirm before removing
+                    const savedId = jobCard.dataset.savedId;
+
                     Swal.fire({
                         title: 'Remove Job',
                         text: 'Are you sure you want to remove this job from your saved list?',
@@ -315,18 +209,27 @@ session_start();
                         confirmButtonText: 'Yes, remove it'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Remove the job card with animation
-                            jobCard.style.opacity = '0';
-                            setTimeout(() => {
-                                jobCard.remove();
-                            }, 300);
-                            
-                            // Show success message
-                            Swal.fire(
-                                'Removed!',
-                                'The job has been removed from your saved list.',
-                                'success'
-                            );
+                            fetch('remove_saved_job.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ saved_job_id: savedId })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    jobCard.style.opacity = '0';
+                                    setTimeout(() => {
+                                        jobCard.remove();
+                                        // Update saved count
+                                        const countElement = document.querySelector('.saved-jobs-count h3');
+                                        const currentCount = parseInt(countElement.textContent);
+                                        countElement.textContent = `${currentCount - 1} Saved Jobs`;
+                                    }, 300);
+                                    Swal.fire('Removed!', 'Job removed successfully.', 'success');
+                                }
+                            });
                         }
                     });
                 });
@@ -334,5 +237,4 @@ session_start();
         });
     </script>
 </body>
-
 </html>
