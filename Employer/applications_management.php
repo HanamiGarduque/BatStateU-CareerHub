@@ -118,7 +118,7 @@ $employer = new Employers($db);
                       <p class="candidate-title"><?php echo htmlspecialchars($row['title']); ?></p>
                       <div class="application-meta">
                         <div class="meta-item"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($row['address']); ?></div>
-                        <div class="meta-item"><i class="fas fa-calendar"></i> <?php echo htmlspecialchars($row['created_at']); ?></div>
+                        <div class="meta-item"><i class="fas fa-calendar"></i><?php echo date("F j, Y", strtotime($row['created_at'])); ?></div>
                       </div>
                     </div>
                   </div>
@@ -129,7 +129,9 @@ $employer = new Employers($db);
                   </div>
 
                   <div class="application-actions">
-                    <button class="action-btn view-resume-btn"><i class="fas fa-file-pdf"></i> View Resume</button>
+                    <a class="action-btn view-resume-btn" href="../JobSeeker/<?php echo htmlspecialchars($row['resume_path']); ?>" target="_blank" style="text-decoration: none;">
+                      <i class="fas fa-file-pdf"></i> View Resume
+                    </a>
                     <button class="action-btn change-status-btn"><i class="fas fa-exchange-alt"></i> Change Status</button>
                     <button class="toggle-details-btn"><i class="fas fa-chevron-down"></i></button>
                   </div>
@@ -141,11 +143,11 @@ $employer = new Employers($db);
                       <h4>Skills</h4>
                       <div class="skills-list">
                         <?php
-                        
+
                         $skillsClass = new Skills($db);
                         $skills = $skillsClass->retrieveSkills($jobseeker_id);
 
-                  
+
                         foreach ($skills as $skill) {
                           echo "<span class='skill-tag'>" . htmlspecialchars($skill['skill_name']) . "</span>";
                         }
@@ -210,7 +212,6 @@ $employer = new Employers($db);
 
                     <div class="application-timeline">
                       <h4>Application Timeline</h4>
-                      <h4>Application Timeline</h4>
                       <div class="timeline">
                         <div class="timeline-item active">
                           <div class="timeline-icon"><i class="fas fa-check"></i></div>
@@ -260,23 +261,7 @@ $employer = new Employers($db);
                       </div>
                     </div>
 
-                    <div class="application-notes">
-                      <h4>Notes</h4>
-                      <div class="notes-list">
-                        <div class="note-item">
-                          <div class="note-header">
-                            <p class="note-author">Maria Santos, HR Manager</p>
-                            <p class="note-date">May 16, 2023 at 2:15 PM</p>
-                          </div>
-                          <p class="note-content">Strong candidate with relevant experience. Resume shows good progression and skill development. Recommend scheduling an initial interview.</p>
-                        </div>
-                      </div>
 
-                      <div class="add-note-form">
-                        <textarea placeholder="Add a note about this candidate..."></textarea>
-                        <button class="add-note-btn">Add Note</button>
-                      </div>
-                    </div>
 
                     <div class="candidate-actions">
                       <button class="candidate-action-btn"><i class="fas fa-envelope"></i> Email Candidate</button>
@@ -287,15 +272,15 @@ $employer = new Employers($db);
                   </div>
                 </div>
               </div>
-              
-            <?php
+
+          <?php
             }
           } else {
             echo "<p>No applications found.</p>";
           }
-            ?>
-              </div>
-              
+          ?>
+        </div>
+
     </main>
   </div>
 
@@ -359,11 +344,11 @@ $employer = new Employers($db);
             title: 'Change Application Status',
             html: `
               <select id="status-select" class="swal2-select">
-                <option value="pending">Pending Review</option>
-                <option value="shortlisted">Shortlisted</option>
-                <option value="interview">Interview</option>
-                <option value="offered">Offer</option>
-                <option value="rejected">Rejected</option>
+                <option value="Under Review">Under Review</option>
+                <option value="Shortlisted">Shortlisted</option>
+                <option value="Interview">Interview</option>
+                <option value="Accepted">Offer Sent</option>
+                <option value="Rejected">Rejected</option>
               </select>
             `,
             showCancelButton: true,
@@ -371,34 +356,69 @@ $employer = new Employers($db);
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Update Status'
           }).then((result) => {
-            if (result.isConfirmed) {
-              const status = document.getElementById('status-select').value;
-              const statusText = {
-                'pending': 'Pending Review',
-                'shortlisted': 'Shortlisted',
-                'interview': 'Interview Scheduled',
-                'offered': 'Offer Sent',
-                'rejected': 'Rejected'
-              };
+            changeStatusButtons.forEach(button => {
+              button.addEventListener('click', function() {
+                Swal.fire({
+                  title: 'Change Application Status',
+                  html: `
+              <select id="status-select" class="swal2-select">
+                <option value="Under Review">Under Review</option>
+                <option value="Shortlisted">Shortlisted</option>
+                <option value="Interview">Interview</option>
+                <option value="Accepted">Offer Sent</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            `,
+                  showCancelButton: true,
+                  confirmButtonColor: '#c41e3a',
+                  cancelButtonColor: '#6c757d',
+                  confirmButtonText: 'Update Status'
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    const status = document.getElementById('status-select').value;
+                    const applicationItem = this.closest('.application-item');
+                    const applicationId = applicationItem.dataset.applicationId; // assuming you have a data attribute
+                    const statusText = {
+                      'Under Review': 'Under Review',
+                      'Shortlisted': 'Shortlisted',
+                      'Interview': 'Interview Scheduled',
+                      'Accepted': 'Offer Sent',
+                      'Rejected': 'Rejected'
+                    };
 
-              const applicationItem = this.closest('.application-item');
-              const statusBadge = applicationItem.querySelector('.application-status-badge');
+                    // Send status to the backend
+                    fetch('update_status.php', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                          application_id: applicationId,
+                          status: status
+                        })
+                      })
+                      .then(response => response.json())
+                      .then(data => {
+                        if (data.success) {
+                          const statusBadge = applicationItem.querySelector('.application-status-badge');
+                          statusBadge.classList.remove('Under Review', 'Shortlisted', 'Interview', 'Accepted', 'Rejected');
+                          statusBadge.classList.add(status);
+                          statusBadge.textContent = statusText[status];
 
-              // Remove all status classes
-              statusBadge.classList.remove('pending', 'shortlisted', 'interview', 'offered', 'rejected');
+                          Swal.fire('Updated!', 'The application status has been updated.', 'success');
+                        } else {
+                          Swal.fire('Error', data.message || 'Status update failed.', 'error');
+                        }
+                      })
+                      .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'A network error occurred.', 'error');
+                      });
+                  }
 
-              // Add new status class
-              statusBadge.classList.add(status);
-
-              // Update status text
-              statusBadge.textContent = statusText[status];
-
-              Swal.fire(
-                'Updated!',
-                'The application status has been updated.',
-                'success'
-              );
-            }
+                });
+              });
+            });
           });
         });
       });

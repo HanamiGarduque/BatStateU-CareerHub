@@ -71,6 +71,7 @@ if (!isJobseeker()) {
                                 $filename = "resume_" . $timestamp . "." . $extension;
                                 $target_path = $userResumeDir . "/" . $filename;
 
+
                                 if (move_uploaded_file($file['tmp_name'], $target_path)) {
                                     // Save application to database
                                     if ($application->createApplication($job_id, $user_id, $cover_letter, $target_path)) {

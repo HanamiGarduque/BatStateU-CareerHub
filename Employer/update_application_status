@@ -1,0 +1,30 @@
+<?php
+// update_status.php
+require_once '../Database/db_connections.php';
+
+header('Content-Type: application/json');
+$emp_id = $_SESSION['id'] ?? null;
+
+$data = json_decode(file_get_contents('php://input'), true);
+
+if (isset($data['id'], $data['status'])) {
+    $applicationId = $data['id'];
+    $newStatus = $data['status'];   
+
+    try {
+        // Update main application status
+        $stmt = $db->prepare("UPDATE applications SET status = ? WHERE id = ?");
+        $stmt->execute([$newStatus, $applicationId]);
+
+        // Optional: Insert into status log
+        $log = $db->prepare("INSERT INTO status_log (application_id, status) VALUES (?, ?)");
+        $log->execute([$applicationId, $newStatus]);
+
+        echo json_encode(['success' => true]);
+    } catch (PDOException $e) {
+        echo json_encode(['success' => false, 'message' => 'DB error: ' . $e->getMessage()]);
+    }
+} else {
+    echo json_encode(['success' => false, 'message' => 'Missing application_id or status']);
+}
+?>

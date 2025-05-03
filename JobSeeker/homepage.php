@@ -16,8 +16,9 @@ $jobs = new Jobs($db);
 $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
 
 // Retrieve jobs based on the keyword
+
 $stmt = $jobs->searchJobs($keyword);
-$num = $stmt->rowCount();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -190,50 +191,48 @@ $num = $stmt->rowCount();
                         </div>
 
                         <div class="jobs-list">
-                            <?php
-                            if ($num > 0) {
-                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                    extract($row);
+                        <?php
+foreach ($stmt as $row) {
+    extract($row);
 
-                                    // Get user ID (from session ideally)
-                                    $user_id = 1;
+    // Get user ID (from session ideally)
+    $user_id = 1;
 
-                                    // Instantiate bookmark handler
-                                    $bookmark = new Bookmarks($db);
+    // Instantiate bookmark handler
+    $bookmark = new Bookmarks($db);
 
-                                    // Check if the current job is bookmarked
-                                    $isSaved = $bookmark->isBookmarked($user_id, $job_id);
-                                    $savedClass = $isSaved ? 'saved' : '';
+    // Check if the current job is bookmarked
+    $isSaved = $bookmark->isBookmarked($user_id, $job_id);
+    $savedClass = $isSaved ? 'saved' : '';
 
-                                    echo <<<HTML
-                <div class="job-card">
-                    <div class="job-header">
-                        <div class="company-logo"></div>
-                        <div class="job-title-container">
-                            <h3>{$title}</h3>
-                            <p class="company-name">{$company_name}</p>
-                        </div>
-                        <button class="save-job {$savedClass}" data-job-id="{$job_id}"><i class="fas fa-bookmark"></i></button>
-                    </div>
-                    <div class="job-details">
-                        <div class="job-detail"><i class="fas fa-map-marker-alt"></i> {$location}</div>
-                        <div class="job-detail"><i class="fas fa-briefcase"></i> {$type}</div>
-                        <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}</div>
-                    </div>
-                    <div class="job-description">
-                        <p>{$description}</p>
-                    </div>
-                    <div class="job-actions">
-                    <a href="applying_job.php?job_id={$job_id}" class="apply-btn">Apply Now</a>
-                    <button class="view-btn">View Details</button>
-                    </div>
-                </div>
-            HTML;
-                                }
-                            } else {
-                                echo "<p>No jobs found.</p>";
-                            }
-                            ?>
+    echo <<<HTML
+    <div class="job-card">
+        <div class="job-header">
+            <div class="company-logo"></div>
+            <div class="job-title-container">
+                <h3>{$title}</h3>
+                <p class="company-name">{$company_name}</p>
+            </div>
+            <button class="save-job {$savedClass}" data-job-id="{$job_id}"><i class="fas fa-bookmark"></i></button>
+        </div>
+        <div class="job-details">
+            <div class="job-detail"><i class="fas fa-map-marker-alt"></i> {$location}</div>
+            <div class="job-detail"><i class="fas fa-briefcase"></i> {$type}</div>
+            <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}</div>
+        </div>
+        <div class="job-description">
+            <p>{$description}</p>
+        </div>
+        <div class="job-actions">
+            <a href="applying_job.php?job_id={$job_id}" class="apply-btn">Apply Now</a>
+            <button class="view-btn">View Details</button>
+        </div>
+    </div>
+HTML;
+}
+
+?>
+
                         </div>
 
                         <script>

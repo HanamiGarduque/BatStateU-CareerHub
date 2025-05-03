@@ -147,12 +147,15 @@ class Jobs
         return $row['total'];
     }
     public function searchJobs($keyword = '')
-    {
-        $stmt = $this->conn->prepare("CALL search_jobs(:keyword)");
-        $stmt->bindValue(':keyword', $keyword); // pass empty string '' to get all
-        $stmt->execute();
-        return $stmt;
-    }
+{
+    $stmt = $this->conn->prepare("CALL search_jobs(:keyword)");
+    $stmt->bindValue(':keyword', $keyword);
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt->closeCursor(); // THIS is what solves the error
+    return $results;
+}
+
     public function retrieveJobById($job_id)
     {
         $stmt = $this->conn->prepare("CALL get_job_by_ID(:job_id)");
@@ -198,7 +201,7 @@ class Bookmarks
 
     public function isBookmarked($user_id, $job_id)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM . $this->tbl_name WHERE user_id = :user_id AND job_id = :job_id");
+        $stmt = $this->conn->prepare("SELECT * FROM {$this->tbl_name} WHERE user_id = :user_id AND job_id = :job_id");
         $stmt->bindParam(':user_id', $user_id);
         $stmt->bindParam(':job_id', $job_id);
         $stmt->execute();
@@ -274,7 +277,7 @@ class JobApplication
                 ':user_id' => $user_id,
                 ':cover_letter' => $cover_letter,
                 ':resume_path' => $resume_path,
-                ':status' => 'submitted' // Default status
+                ':status' => 'Under Review' // Default status
             ]);
 
             return true;
