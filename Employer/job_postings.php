@@ -147,7 +147,7 @@ $application = new JobApplication($db);
                     <div class="job-stat">
                       <span class="stat-value"><?php echo $interviewCount; ?></span>
                       <span class="stat-label">Interviews</span>
-                    </div>
+                    </div>  
                     <div class="job-stat">
                       <span class="stat-value"><?php echo $shortlistedCount; ?></span>
                       <span class="stat-label">Shortlisted</span>
@@ -156,14 +156,14 @@ $application = new JobApplication($db);
 
                   <div class="job-posting-actions">
                     <button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button>
-                    <button class="action-btn edit-btn"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="action-btn edit-btn" onclick="window.location.href='edit_job.php?job_id=<?php echo $jobId; ?>';"><i class="fas fa-edit"></i> Edit</button>
                     <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Delete</button>
                   </div>
                 </div>
               </div>
           <?php
             }
-          } else {
+          } else { 
             echo "<p>No applications found.</p>";
           }
           ?>

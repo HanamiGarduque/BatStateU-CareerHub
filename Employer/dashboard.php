@@ -8,9 +8,33 @@ if (!isEmployer()) {
   exit();
 }
 
+$emp_id = $_SESSION['id'] ?? null;
+
+
+// try 
+
+  // // Count Active Job Postings
+  // $stmt = $pdo-&gt;query(&quot;SELECT COUNT(*) AS total_jobs FROM jobs&quot;);
+  // $jobsPosted = $stmt-&gt;fetch(PDO::FETCH_ASSOC)[&#39;total_jobs&#39;] ?? 0;
+  
+  // // Count Total Applications
+  // $stmt = $pdo-&gt;query(&quot;SELECT COUNT(*) AS total_applications FROM applications&quot;);
+  // $jobApplications = $stmt-&gt;fetch(PDO::FETCH_ASSOC)[&#39;total_applications&#39;] ?? 0;
+  
+  // // Count Positions Filled
+  // $stmt = $pdo-&gt;query(&quot;SELECT COUNT(*) AS total_filled FROM jobs WHERE status = &#39;accepted&#39;&quot;);
+  
+  // $positionsFilled = $stmt-&gt;fetch(PDO::FETCH_ASSOC)[&#39;total_filled&#39;] ?? 0;
+  
+  // } catch (PDOException $e) {
+  // $dbError = &quot;Database error: &quot; . htmlspecialchars($e-&gt;getMessage());
+  // }
+  
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
+
 
 <head>
   <meta charset="UTF-8">
@@ -97,11 +121,20 @@ if (!isEmployer()) {
             <div class="stat-icon">
               <i class="fas fa-file-alt"></i>
             </div>
-            <div class="stat-info">
-              <h3>156</h3>
-              <p>Total Applications</p>
-            </div>
-          </div>
+            <?php
+$database = new Database();
+$db = $database->getConnect();
+$application = new JobApplication($db);
+
+// Call the stored procedure and get the total
+$totalApplications = $application->totalJobApplications($emp_id);
+?>
+
+<div class="stat-info">
+<h3><?php echo htmlspecialchars((string)$totalApplications); ?></h3>
+  <p>Total Applications</p>
+</div>
+
           
           <div class="stat-card">
             <div class="stat-icon">

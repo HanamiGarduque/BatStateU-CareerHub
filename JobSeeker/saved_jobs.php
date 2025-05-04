@@ -1,18 +1,21 @@
 <?php
-session_start();
-require_once __DIR__ . '/../Database/db_connections.php';
+require_once '../check_session.php';
+require_once '../Database/crud_functions.php';
+require_once '../Database/db_connections.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+
+if (!isJobseeker()) {
+    header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
     exit();
-}
+  }
+  
 
 $database = new Database();
 $conn = $database->getConnect();
 
 // Fetch saved jobs with job details
 try {
-    $user_id = $_SESSION['user_id'];
+    $user_id = $_SESSION['id'];
     $sql = "SELECT sj.saved_jobs_id, sj.saved_date, 
                    j.job_id, j.title AS job_title, 
                    j.company_name, j.location, 

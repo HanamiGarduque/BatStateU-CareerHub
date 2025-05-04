@@ -112,6 +112,8 @@ class Jobs
     private $conn;
     private $tbl_name = "jobs";
 
+    public $job_id;
+    public $user_id;
     public $title;
     public $job_category;
     public $company_name;
@@ -147,14 +149,14 @@ class Jobs
         return $row['total'];
     }
     public function searchJobs($keyword = '')
-{
-    $stmt = $this->conn->prepare("CALL search_jobs(:keyword)");
-    $stmt->bindValue(':keyword', $keyword);
-    $stmt->execute();
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $stmt->closeCursor(); // THIS is what solves the error
-    return $results;
-}
+    {
+        $stmt = $this->conn->prepare("CALL search_jobs(:keyword)");
+        $stmt->bindValue(':keyword', $keyword);
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor(); // THIS is what solves the error
+        return $results;
+    }
 
     public function retrieveJobById($job_id)
     {
@@ -185,6 +187,69 @@ class Jobs
             return false;
         }
 
+        return $stmt->execute();
+    }
+    // try ko lang pero gumana idk
+    public function getJobById($job_id)
+    {
+        $query = "SELECT * FROM jobs WHERE job_id = :job_id"; // Assuming the correct column name is 'job_id'
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':job_id', $job_id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    public function updateJobById($job_id)
+    {
+        $stmt = $this->conn->prepare("CALL update_job(:job_id, :user_id, :title, :job_category, :company_name, :location, :type, :salary_min, :salary_max, :description, :responsibilities, :requirements, :benefits_perks)");
+    
+        $stmt->bindParam(':job_id', $job_id);
+        $stmt->bindParam(':user_id', $this->user_id); // ✅ ADD THIS LINE
+        $stmt->bindParam(':title', $this->title);
+        $stmt->bindParam(':job_category', $this->job_category);
+        $stmt->bindParam(':company_name', $this->company_name);
+        $stmt->bindParam(':location', $this->location);
+        $stmt->bindParam(':type', $this->type);
+        $stmt->bindParam(':salary_min', $this->salary_min);
+        $stmt->bindParam(':salary_max', $this->salary_max);
+        $stmt->bindParam(':description', $this->description);
+        $stmt->bindParam(':responsibilities', $this->responsibilities);
+        $stmt->bindParam(':requirements', $this->requirements);
+        $stmt->bindParam(':benefits_perks', $this->benefits_perks);
+     
+        return $stmt->execute();
+    }
+    
+    
+    public function updateJob($job_id)
+    {
+        $query = "UPDATE jobs SET 
+                    title = :title, 
+                    job_category = :job_category, 
+                    company_name = :company_name, 
+                    location = :location, 
+                    type = :type, 
+                    salary_min = :salary_min, 
+                    salary_max = :salary_max, 
+                    description = :description, 
+                    responsibilities = :responsibilities, 
+                    requirements = :requirements, 
+                    benefits_perks = :benefits_perks 
+                  WHERE job_id = :job_id";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':title', $this->title);
+        $stmt->bindParam(':job_category', $this->job_category);
+        $stmt->bindParam(':company_name', $this->company_name);
+        $stmt->bindParam(':location', $this->location);
+        $stmt->bindParam(':type', $this->type);
+        $stmt->bindParam(':salary_min', $this->salary_min);
+        $stmt->bindParam(':salary_max', $this->salary_max);
+        $stmt->bindParam(':description', $this->description);
+        $stmt->bindParam(':responsibilities', $this->responsibilities);
+        $stmt->bindParam(':requirements', $this->requirements);
+        $stmt->bindParam(':benefits_perks', $this->benefits_perks);
+        $stmt->bindParam(':job_id', $job_id);
 
         return $stmt->execute();
     }
@@ -327,8 +392,17 @@ class JobApplication
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor(); // Very important!
         return $result;
+    }
 
-       
+    public function totalJobApplications($emp_id)
+    {
+        // Call the stored procedure
+        $stmt = $this->conn->prepare("CALL get_total_applications(:emp_id, @total)");
+        $stmt->bindParam(':emp_id', $emp_id);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor(); // Very important!
+        return $result;
     }
 }
 class Education

@@ -11,6 +11,7 @@ if (!isJobseeker()) {
 $database = new Database();
 $db = $database->getConnect();
 $jobs = new Jobs($db);
+$user_id = $_SESSION['id'] ?? null; // Get the user ID from the session
 
 // Get the search keyword from the request
 $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
@@ -179,15 +180,7 @@ $stmt = $jobs->searchJobs($keyword);
                     <div class="job-listings">
                         <div class="job-listings-header">
                             <h3>120 Jobs Found</h3>
-                            <div class="sort-options">
-                                <label>Sort by:</label>
-                                <select>
-                                    <option value="relevance">Relevance</option>
-                                    <option value="date">Date Posted</option>
-                                    <option value="salary-high">Salary (High to Low)</option>
-                                    <option value="salary-low">Salary (Low to High)</option>
-                                </select>
-                            </div>
+                            
                         </div>
 
                         <div class="jobs-list">
@@ -196,7 +189,7 @@ foreach ($stmt as $row) {
     extract($row);
 
     // Get user ID (from session ideally)
-    $user_id = 1;
+
 
     // Instantiate bookmark handler
     $bookmark = new Bookmarks($db);
@@ -205,6 +198,7 @@ foreach ($stmt as $row) {
     $isSaved = $bookmark->isBookmarked($user_id, $job_id);
     $savedClass = $isSaved ? 'saved' : '';
 
+    // Display job card
     echo <<<HTML
     <div class="job-card">
         <div class="job-header">
