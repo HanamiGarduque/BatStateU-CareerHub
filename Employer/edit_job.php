@@ -89,7 +89,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-container">
-                <div class="logo"></div>
+                 <div class="logo">
+                <img src="../Layouts/logo.png" alt="Profile Picture">
+                </div>
                 <h3>Career Hub</h3>
             </div>
 
@@ -125,8 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <!-- Header -->
             <header class="dashboard-header">
                 <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search...">
+                     
                 </div>
                 <div class="user-menu">
                     <div class="notifications">
@@ -134,7 +135,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <span class="notification-badge">5</span>
                     </div>
                     <div class="user-profile">
-                        <img src="../placeholder.jpg" alt="Profile Picture">
+                        <img src="../Layouts/user_icon.png" alt="Profile Picture">
                         <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
                     </div>
                 </div>

@@ -7,8 +7,8 @@ require_once '../Database/db_connections.php';
 if (!isJobseeker()) {
     header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
     exit();
-  }
-  
+}
+
 
 $database = new Database();
 $conn = $database->getConnect();
@@ -28,17 +28,14 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->execute();
-    
+
     $saved_jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $saved_count = count($saved_jobs);
-
 } catch (PDOException $e) {
     die("Error fetching saved jobs: " . $e->getMessage());
 }
 
-function time_elapsed_string($datetime) {
-
-}
+function time_elapsed_string($datetime) {}
 ?>
 
 <!DOCTYPE html>
@@ -58,10 +55,12 @@ function time_elapsed_string($datetime) {
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-container">
-                <div class="logo"></div>
+                 <div class="logo">
+                <img src="../Layouts/logo.png" alt="Profile Picture">
+                </div>
                 <h3>Career Hub</h3>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <ul>
                     <li>
@@ -97,7 +96,7 @@ function time_elapsed_string($datetime) {
                         <span class="notification-badge">3</span>
                     </div>
                     <div class="user-profile">
-                        <img src="../placeholder.jpg" alt="Profile Picture">
+                        <img src="../Layouts/user_icon.png" alt="Profile Picture">
                         <span>Welcome, <?php echo htmlspecialchars($_SESSION['name'] ?? 'User'); ?></span>
                     </div>
                 </div>
@@ -106,13 +105,13 @@ function time_elapsed_string($datetime) {
             <!-- Saved Jobs Content -->
             <div class="dashboard-content">
                 <h1>Saved Jobs</h1>
-                
+
                 <!-- Saved Jobs Filter -->
                 <div class="saved-jobs-header">
                     <div class="saved-jobs-count">
                         <h3><?php echo $saved_count; ?> Saved Jobs</h3>
                     </div>
-                    
+
                     <div class="saved-jobs-actions">
                         <select class="sort-select">
                             <option value="recent">Most Recent</option>
@@ -122,60 +121,62 @@ function time_elapsed_string($datetime) {
                             <option value="company-az">Company (A-Z)</option>
                             <option value="company-za">Company (Z-A)</option>
                         </select>
-                        
-                        <div class="view-toggle">
-                            <button class="view-btn active" data-view="grid"><i class="fas fa-th-large"></i></button>
-                            <button class="view-btn" data-view="list"><i class="fas fa-list"></i></button>
-                        </div>
+
                     </div>
                 </div>
-                
+
                 <!-- Saved Jobs Grid -->
+
                 <div class="saved-jobs-grid">
                     <?php foreach ($saved_jobs as $job): ?>
-                    <div class="saved-job-card" data-saved-id="<?php echo $job['saved_jobs_id']; ?>">
-                        <div class="saved-job-header">
-                            <div class="company-logo"></div>
-                            <button class="remove-saved-job"><i class="fas fa-times"></i></button>
+                        <div class="saved-job-card" data-saved-id="<?php echo $job['saved_jobs_id']; ?>">
+                            <div class="saved-job-header">
+                                <div class="company-logo">
+                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
+                                        </div>
+                                <form method="POST" action="remove_saved_job.php">
+                                    <input type="hidden" name="saved_job_id" value="<?php echo $job['saved_jobs_id']; ?>">
+                                    <button type="submit" class="remove-saved-job">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="saved-job-content">
+                                <h3 class="job-title"><?php echo htmlspecialchars($job['job_title']); ?></h3>
+                                <p class="company-name"><?php echo htmlspecialchars($job['company_name']); ?></p>
+
+                                <div class="job-details">
+                                    <div class="job-detail">
+                                        <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($job['location']); ?>
+                                    </div>
+                                    <div class="job-detail">
+                                        <i class="fas fa-briefcase"></i> <?php echo htmlspecialchars($job['job_type']); ?>
+                                    </div>
+                                    <div class="job-detail">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        ₱<?php echo number_format($job['salary_min'], 0) ?> - ₱<?php echo number_format($job['salary_max'], 0) ?>
+                                    </div>
+                                </div>
+
+                                <div class="saved-date">
+                                    <i class="fas fa-clock"></i> Saved <?php echo time_elapsed_string($job['saved_date']); ?>
+                                </div>
+
+                                <div class="job-actions">
+                                    <a href="applying_job.php?job_id=<?php echo htmlspecialchars($job['job_id']); ?>"
+                                        class="apply-btn"
+                                        style="display: flex; justify-content: center; align-items: center; text-align: center; padding: 0.6rem 1rem; border-radius: 4px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background-color 0.3s;">
+                                        Apply Now
+                                    </a>
+                                    <button class="view-btn">View Details</button>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="saved-job-content">
-                            <h3 class="job-title"><?php echo htmlspecialchars($job['job_title']); ?></h3>
-                            <p class="company-name"><?php echo htmlspecialchars($job['company_name']); ?></p>
-                            
-                            <div class="job-details">
-                                <div class="job-detail">
-                                    <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($job['location']); ?>
-                                </div>
-                                <div class="job-detail">
-                                    <i class="fas fa-briefcase"></i> <?php echo htmlspecialchars($job['job_type']); ?>
-                                </div>
-                                <div class="job-detail">
-                                    <i class="fas fa-money-bill-wave"></i> 
-                                    ₱<?php echo number_format($job['salary_min'], 0) ?> - ₱<?php echo number_format($job['salary_max'], 0) ?>
-                                </div>
-                            </div>
-                            
-                            <div class="saved-date">
-                                <i class="fas fa-clock"></i> Saved <?php echo time_elapsed_string($job['saved_date']); ?>
-                            </div>
-                            
-                            <div class="job-actions">
-                                <button class="apply-btn">Apply Now</button>
-                                <button class="view-btn">View Details</button>
-                            </div>
-                        </div>
-                    </div>
                     <?php endforeach; ?>
                 </div>
-                
-                <!-- Pagination -->
-                <div class="pagination">
-                    <button class="pagination-btn prev"><i class="fas fa-chevron-left"></i></button>
-                    <button class="pagination-btn active">1</button>
-                    <button class="pagination-btn">2</button>
-                    <button class="pagination-btn next"><i class="fas fa-chevron-right"></i></button>
-                </div>
+
+
             </div>
         </main>
     </div>
@@ -185,20 +186,21 @@ function time_elapsed_string($datetime) {
         document.addEventListener('DOMContentLoaded', function() {
             const viewButtons = document.querySelectorAll('.view-btn');
             const savedJobsContainer = document.querySelector('.saved-jobs-grid');
-            
+
             viewButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     viewButtons.forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
-                    
+
                     const view = this.getAttribute('data-view');
                     savedJobsContainer.classList.toggle('list-view', view === 'list');
                 });
             });
-            
-            // Remove saved job
+            // Handle removing a saved job using a remove button
             document.querySelectorAll('.remove-saved-job').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevent the form from submitting immediately
+
                     const jobCard = this.closest('.saved-job-card');
                     const savedId = jobCard.dataset.savedId;
 
@@ -212,32 +214,18 @@ function time_elapsed_string($datetime) {
                         confirmButtonText: 'Yes, remove it'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            fetch('remove_saved_job.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({ saved_job_id: savedId })
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    jobCard.style.opacity = '0';
-                                    setTimeout(() => {
-                                        jobCard.remove();
-                                        // Update saved count
-                                        const countElement = document.querySelector('.saved-jobs-count h3');
-                                        const currentCount = parseInt(countElement.textContent);
-                                        countElement.textContent = `${currentCount - 1} Saved Jobs`;
-                                    }, 300);
-                                    Swal.fire('Removed!', 'Job removed successfully.', 'success');
-                                }
-                            });
+                            // Submit the form using JavaScript
+                            const form = this.closest('form');
+                            form.submit();
                         }
                     });
                 });
             });
+
+
+
         });
     </script>
 </body>
+
 </html>

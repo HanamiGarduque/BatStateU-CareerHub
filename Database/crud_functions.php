@@ -215,7 +215,7 @@ class Jobs
         $stmt->bindParam(':responsibilities', $this->responsibilities);
         $stmt->bindParam(':requirements', $this->requirements);
         $stmt->bindParam(':benefits_perks', $this->benefits_perks);
-     
+        
         return $stmt->execute();
     }
     
@@ -275,14 +275,19 @@ class Bookmarks
 
     public function add($user_id, $job_id)
     {
-        $stmt = $this->conn->prepare("INSERT INTO . $this->tbl_name (user_id, job_id) VALUES (?, ?)");
+        $stmt = $this->conn->prepare("INSERT INTO {$this->tbl_name} (user_id, job_id) VALUES (?, ?)");
         return $stmt->execute([$user_id, $job_id]);
     }
 
-    public function remove($user_id, $job_id)
+    public function removeByUser($user_id, $job_id)
     {
-        $stmt = $this->conn->prepare("DELETE FROM . $this->tbl_name WHERE user_id = ? AND job_id = ?");
+        $stmt = $this->conn->prepare("DELETE FROM {$this->tbl_name} WHERE user_id = ? AND job_id = ?");
         return $stmt->execute([$user_id, $job_id]);
+    }
+    public function removeBySavedJob($user_id, $saved_jobs_id)
+    {
+        $stmt = $this->conn->prepare("DELETE FROM {$this->tbl_name} WHERE user_id = ? AND saved_jobs_id = ?");
+        return $stmt->execute([$user_id, $saved_jobs_id]);
     }
 }
 
@@ -394,16 +399,16 @@ class JobApplication
         return $result;
     }
 
-    public function totalJobApplications($emp_id)
+    public function getTotalJobApplications($emp_id)
     {
-        // Call the stored procedure
-        $stmt = $this->conn->prepare("CALL get_total_applications(:emp_id, @total)");
+        $stmt = $this->conn->prepare("CALL get_total_applications(:emp_id)");
         $stmt->bindParam(':emp_id', $emp_id);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor(); // Very important!
-        return $result;
+        return $result['total'] ?? 0;
     }
+    
 }
 class Education
 {

@@ -30,7 +30,9 @@ $application = new JobApplication($db);
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="logo-container">
-        <div class="logo"></div>
+         <div class="logo">
+                <img src="../Layouts/logo.png" alt="Profile Picture">
+                </div>
         <h3>Career Hub</h3>
       </div>
 
@@ -49,11 +51,7 @@ $application = new JobApplication($db);
             <a href="applications_management.php"><i class="fas fa-file-alt"></i> Applications</a>
           </li>
           <li>
-            <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
-          </li>
-          <li>
-            <a href="#"><i class="fas fa-cog"></i> Settings</a>
-          </li>
+          
           <li class="logout">
             <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
           </li>
@@ -75,7 +73,7 @@ $application = new JobApplication($db);
             <span class="notification-badge">5</span>
           </div>
           <div class="user-profile">
-            <img src="../placeholder.jpg" alt="Profile Picture">
+          <img src="../Layouts/emp_icon.png" alt="Profile Picture">
             <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
           </div>
         </div>

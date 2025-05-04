@@ -43,7 +43,9 @@ $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
     <div class="dashboard-container">
         <aside class="sidebar">
             <div class="logo-container">
-                <div class="logo"></div>
+                <div class="logo">
+                <img src="../Layouts/logo.png" alt="System Logo">
+                </div>
                 <h3>Career Hub</h3>
             </div>
 
@@ -70,16 +72,15 @@ $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
         <main class="main-content">
             <header class="dashboard-header">
                 <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search...">
+                     
                 </div>
                 <div class="user-menu">
                     <div class="notifications">
                         <i class="fas fa-bell"></i>
-                        <span class="notification-badge">5</span>
+                        <span class="notification-badge">3</span>
                     </div>
                     <div class="user-profile">
-                        <img src="../placeholder.jpg" alt="Profile Picture">
+                        <img src="../Layouts/user_icon.png" alt="Profile Picture">
                         <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Employer'; ?></span>
                     </div>
                 </div>
@@ -89,6 +90,9 @@ $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
 
                 <div class="profile-container">
                     <div class="profile-header">
+                        <div class="profile-picture-container">
+                            <img src="../Layouts/user_icon.png" alt="Profile Picture">
+                        </div>
                         <div class="profile-info">
                             <h2><?php echo htmlspecialchars($userData['first_name'] . ' ' . $userData['last_name']); ?></h2>
                             <p><?php echo htmlspecialchars($userData['title']); ?></p>
@@ -98,7 +102,6 @@ $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
 
                     <div class="tab-buttons">
                         <button class="tab-btn active" data-tab="personal">Personal Info</button>
-                        <button class="tab-btn" data-tab="resume">Resume</button>
                         <button class="tab-btn" data-tab="skills">Skills & Experience</button>
                         <button class="tab-btn" data-tab="education">Education</button>
                     </div>
@@ -107,36 +110,36 @@ $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
                         <div class="personal-info-container">
                             <form method="POST" action="update_profile.php">
                                 <div class="form-row">
-                                    <div class="form-group">
+                                    <div class="form-group-profile">
                                         <label>First Name</label>
                                         <input type="text" name="first_name" value="<?php echo htmlspecialchars($userData['first_name']); ?> <?php echo htmlspecialchars($userData['last_name']); ?>" required readonly>
                                     </div>
 
                                 </div>
                                 <div class="form-row">
-                                    <div class="form-group">
+                                    <div class="form-group-profile">
                                         <label>Title</label>
                                         <input type="text" name="title" value="<?php echo htmlspecialchars($userData['title']); ?>" required>
                                     </div>
                                 </div>
 
                                 <div class="form-row">
-                                    <div class="form-group">
+                                    <div class="form-group-profile">
                                         <label>Email Address</label>
                                         <input type="email" name="email" value="<?php echo htmlspecialchars($userData['email']); ?>" required readonly>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group-profile">
                                         <label>Phone Number</label>
                                         <input type="text" name="phone" value="<?php echo htmlspecialchars($userData['phone_number']); ?>" required>
                                     </div>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group-profile">
                                     <label>Address</label>
                                     <input type="text" name="address" value="<?php echo htmlspecialchars($userData['address']); ?>" required>
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group-profile">
                                     <label>About Me</label>
                                     <textarea name="bio" rows="4"><?php echo htmlspecialchars($userData['bio'] ?? ''); ?></textarea>
                                 </div>
@@ -144,80 +147,6 @@ $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
                                 <button type="submit" class="save-btn">Save</button>
                             </form>
                         </div>
-                    </div>
-
-                    <div class="tab-pane" id="resume">
-                        <h3>Resume</h3>
-
-                        <!-- Upload Form -->
-                        <form action="resume_handler.php" method="POST" enctype="multipart/form-data" class="resume-upload-form">
-                            <div class="form-group">
-                                <label for="resumeFiles">Upload Resume</label>
-                                <input type="file" name="resume" id="resumeFiles" class="form-control" accept=".pdf,.doc,.docx" required>
-                            </div>
-                            <input type="hidden" name="action" value="upload">
-                            <button type="submit" class="btn btn-primary">Upload Resume</button>
-                        </form>
-
-                        <!-- Uploaded Resume Section -->
-                        <?php
-                        // Directory for resumes with this user's ID
-                        $userResumeDir = "resumes/user_" . $user_id;
-
-                        // Create directory if it doesn't exist
-                        if (!file_exists($userResumeDir) && !is_dir($userResumeDir)) {
-                            mkdir($userResumeDir, 0755, true);
-                        }
-
-                        // Get all files in the user's resume directory
-                        $userResumes = [];
-                        if (is_dir($userResumeDir)) {
-                            $files = scandir($userResumeDir);
-                            foreach ($files as $file) {
-                                if ($file != "." && $file != "..") {
-                                    $userResumes[] = $file;
-                                }
-                            }
-                        }
-
-                        // If no resumes, also check the old method (single file in main directory)
-                        if (empty($userResumes)) {
-                            $extensions = ['pdf', 'doc', 'docx'];
-                            foreach ($extensions as $ext) {
-                                $path = "resumes/$user_id.$ext";
-                                if (file_exists($path)) {
-                                    $userResumes[] = basename($path);
-                                }
-                            }
-                        }
-
-                        // Display all resumes
-                        if (!empty($userResumes)): ?>
-                            <h4>Your Uploaded Resumes</h4>
-                            <div class="resume-list">
-                                <?php foreach ($userResumes as $resume): ?>
-                                    <div class="resume-item">
-                                        <span class="file-name"><?= htmlspecialchars($resume) ?></span>
-                                        <div class="resume-buttons">
-                                            <!-- View Resume -->
-                                            <a href="<?= htmlspecialchars("$userResumeDir/$resume") ?>" target="_blank" class="btn btn-success" title="View Resume">
-                                                <i class="fa fa-eye"></i>
-                                            </a>
-                                            <!-- Delete Resume -->
-                                            <form action="resume_handler.php" method="POST" style="display:inline;">
-                                                <input type="hidden" name="action" value="delete">
-                                                <input type="hidden" name="file_name" value="<?= htmlspecialchars($resume) ?>">
-                                                <button type="submit" class="btn btn-danger" title="Delete Resume">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <p class="no-resumes">No resumes uploaded yet.</p>
-                        <?php endif; ?>
                     </div>
 
                     <div class="tab-pane" id="skills">

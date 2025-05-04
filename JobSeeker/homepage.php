@@ -31,13 +31,32 @@ $stmt = $jobs->searchJobs($keyword);
     <link rel="stylesheet" href="../Layouts/jobseeker.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Save scroll position before leaving
+        window.addEventListener('beforeunload', function() {
+            localStorage.setItem('scrollPosition', window.scrollY);
+        });
+
+        // Restore scroll position on load
+        window.addEventListener('load', function() {
+            const scrollY = localStorage.getItem('scrollPosition');
+            if (scrollY !== null) {
+                window.scrollTo(0, parseInt(scrollY));
+                localStorage.removeItem('scrollPosition'); // Optional: clean up
+            }
+        });
+    </script>
+
 </head>
 
 <body>
     <div class="dashboard-container">
         <aside class="sidebar">
             <div class="logo-container">
-                <div class="logo"></div>
+                 <div class="logo">
+                <img src="../Layouts/logo.png" alt="Profile Picture">
+                </div>
                 <h3>Career Hub</h3>
             </div>
 
@@ -65,14 +84,17 @@ $stmt = $jobs->searchJobs($keyword);
         <!-- Main Content Area -->
         <main class="main-content">
             <!-- Header -->
-            <header class="dashboard-header">.
+            <header class="dashboard-header">
+            <div class="search-container">
+                     
+                     </div>
                 <div class="user-menu">
                     <div class="notifications">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge">3</span>
                     </div>
                     <div class="user-profile">
-                        <img src="../placeholder.jpg" alt="Profile Picture">
+                        <img src="../Layouts/user_icon.png" alt="Profile Picture">
                         <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'User'; ?></span>
                     </div>
                 </div>
@@ -83,187 +105,75 @@ $stmt = $jobs->searchJobs($keyword);
                 <h1>Find Jobs</h1>
 
                 <div class="job-search-container">
-                    <!-- Advanced Search Form -->
-                    <div class="advanced-search">
-                        <h3>Filter Jobs</h3>
+                    <div class="job-listings">
+                        <h3>Search for Jobs</h3>
                         <form class="filter-form" method="GET" action="homepage.php">
                             <div class="form-group">
-                                <label>Keywords</label>
                                 <input type="text" name="keyword" placeholder="Job title, skills, or keywords" value="<?php echo htmlspecialchars($keyword); ?>">
                                 <button type="submit" class="search-btn">Search</button>
                             </div>
 
-                            <div class="form-group">
-                                <label>Location</label>
-                                <select>
-                                    <option value="">All Locations</option>
-                                    <option value="batangas-city">Batangas City</option>
-                                    <option value="lipa-city">Lipa City</option>
-                                    <option value="tanauan">Tanauan</option>
-                                    <option value="santo-tomas">Santo Tomas</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Job Type</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" value="full-time"> Full-time
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" value="part-time"> Part-time
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" value="contract"> Contract
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" value="internship"> Internship
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Industry</label>
-                                <select>
-                                    <option value="">All Industries</option>
-                                    <option value="technology">Information Technology</option>
-                                    <option value="healthcare">Healthcare</option>
-                                    <option value="education">Education</option>
-                                    <option value="finance">Finance</option>
-                                    <option value="manufacturing">Manufacturing</option>
-                                    <option value="retail">Retail</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Experience Level</label>
-                                <select>
-                                    <option value="">Any Experience</option>
-                                    <option value="entry">Entry Level</option>
-                                    <option value="mid">Mid Level</option>
-                                    <option value="senior">Senior Level</option>
-                                    <option value="executive">Executive</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Salary Range</label>
-                                <select>
-                                    <option value="">Any Salary</option>
-                                    <option value="0-15000">Below ₱15,000</option>
-                                    <option value="15000-25000">₱15,000 - ₱25,000</option>
-                                    <option value="25000-40000">₱25,000 - ₱40,000</option>
-                                    <option value="40000-60000">₱40,000 - ₱60,000</option>
-                                    <option value="60000+">Above ₱60,000</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Date Posted</label>
-                                <select>
-                                    <option value="">Any Time</option>
-                                    <option value="today">Today</option>
-                                    <option value="3days">Last 3 Days</option>
-                                    <option value="week">Last Week</option>
-                                    <option value="month">Last Month</option>
-                                </select>
-                            </div>
-
-                            <button type="submit" class="filter-btn">Apply Filters</button>
-                            <button type="reset" class="reset-btn" onclick="window.location.href='homepage.php'">Reset Filters</button>
                         </form>
-                    </div>
-
-                    <!-- Job Listings -->
-                    <div class="job-listings">
+                        <?php
+                        $totalJobs = $jobs->countAllJobs();
+                        ?>
                         <div class="job-listings-header">
-                            <h3>120 Jobs Found</h3>
-                            
+                            <h3><?php echo $totalJobs; ?> Jobs Found</h3>
                         </div>
+
 
                         <div class="jobs-list">
-                        <?php
-foreach ($stmt as $row) {
-    extract($row);
+                            <?php
+                            foreach ($stmt as $row) {
+                                extract($row);
 
-    // Get user ID (from session ideally)
+                                $bookmark = new Bookmarks($db);
 
+                                // Check if the current job is bookmarked
+                                $isSaved = $bookmark->isBookmarked($user_id, $job_id);
+                                $savedClass = $isSaved ? 'saved' : '';
 
-    // Instantiate bookmark handler
-    $bookmark = new Bookmarks($db);
+                                // Display job card
+                                echo <<<HTML
+                                <div class="job-card">
+                                    <div class="job-header">
+                                        <div class="company-logo">
+                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
+                                        </div>
+                                        <div class="job-title-container">
+                                            <h3>{$title}</h3>
+                                            <p class="company-name">{$company_name}</p>
+                                        </div>
+                                        <form method="POST" action="bookmark_job.php" class="bookmark-form">
+                                        <input type="hidden" name="job_id" value="{$job_id}">
+                                HTML;
 
-    // Check if the current job is bookmarked
-    $isSaved = $bookmark->isBookmarked($user_id, $job_id);
-    $savedClass = $isSaved ? 'saved' : '';
+                                echo '<button type="submit" class="save-job ' . ($isSaved ? 'saved' : '') . '">';
+                                echo '<i class="fas fa-bookmark"></i>';
+                                echo '</button></form>';
 
-    // Display job card
-    echo <<<HTML
-    <div class="job-card">
-        <div class="job-header">
-            <div class="company-logo"></div>
-            <div class="job-title-container">
-                <h3>{$title}</h3>
-                <p class="company-name">{$company_name}</p>
+                                echo <<<HTML
             </div>
-            <button class="save-job {$savedClass}" data-job-id="{$job_id}"><i class="fas fa-bookmark"></i></button>
-        </div>
-        <div class="job-details">
-            <div class="job-detail"><i class="fas fa-map-marker-alt"></i> {$location}</div>
-            <div class="job-detail"><i class="fas fa-briefcase"></i> {$type}</div>
-            <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}</div>
-        </div>
-        <div class="job-description">
-            <p>{$description}</p>
-        </div>
-        <div class="job-actions">
-            <a href="applying_job.php?job_id={$job_id}" class="apply-btn">Apply Now</a>
-            <button class="view-btn">View Details</button>
-        </div>
-    </div>
-HTML;
-}
+            <div class="job-details">
+                <div class="job-detail"><i class="fas fa-map-marker-alt"></i> {$location}</div>
+                <div class="job-detail"><i class="fas fa-briefcase"></i> {$type}</div>
+                <div class="job-detail"><i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}</div>
+            </div>
+            <div class="job-description">
+                <p>{$description}</p>
+            </div>
+            <div class="job-actions">
+                <a href="applying_job.php?job_id={$job_id}" class="apply-btn">Apply Now</a>
+                <button class="view-btn">View Details</button>
+            </div>
+            </div>
+            HTML;
+                            }
 
-?>
+                            ?>
 
                         </div>
 
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                document.querySelectorAll('.save-job').forEach(button => {
-                                    button.addEventListener('click', function() {
-                                        const jobId = this.getAttribute('data-job-id');
-
-                                        fetch('bookmark_job.php', {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                                },
-                                                body: 'job_id=' + jobId
-                                            })
-                                            .then(response => response.text())
-                                            .then(data => {
-                                                if (data === 'saved') {
-                                                    this.classList.add('saved');
-                                                    Swal.fire({
-                                                        icon: 'success',
-                                                        title: 'Job bookmarked!',
-                                                        showConfirmButton: false,
-                                                        timer: 1500
-                                                    });
-
-                                                } else if (data === 'unsaved') {
-                                                    this.classList.remove('saved');
-                                                    alert('Bookmark removed!');
-                                                } else {
-                                                    alert('Something went wrong.');
-                                                }
-                                            });
-                                    });
-                                });
-                            });
-                        </script>
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {
                                 const searchInput = document.querySelector('input[name="keyword"]');
@@ -279,6 +189,25 @@ HTML;
                                     if (this.value.trim() === '') {
                                         window.location.href = 'homepage.php';
                                     }
+                                });
+                            });
+                            document.querySelectorAll('.bookmark-form').forEach(form => {
+                                form.addEventListener('submit', function(e) {
+                                    e.preventDefault(); // Prevent reload
+
+                                    const formData = new FormData(this);
+                                    const button = this.querySelector('button');
+
+                                    fetch(this.action, {
+                                            method: 'POST',
+                                            body: formData
+                                        })
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                button.classList.toggle('saved', data.isSaved);
+                                            }
+                                        });
                                 });
                             });
                         </script>

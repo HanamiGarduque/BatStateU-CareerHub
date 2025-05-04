@@ -18,7 +18,9 @@ session_start();
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-container">
-                <div class="logo"></div>
+                 <div class="logo">
+                <img src="../Layouts/logo.png" alt="Profile Picture">
+                </div>
                 <h3>Career Hub</h3>
             </div>
             
@@ -56,7 +58,7 @@ session_start();
                         <span class="notification-badge">3</span>
                     </div>
                     <div class="user-profile">
-                        <img src="../placeholder.jpg" alt="Profile Picture">
+                        <img src="../Layouts/user_icon.png" alt="Profile Picture">
                         <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'User'; ?></span>
                     </div>
                 </div>
@@ -91,7 +93,9 @@ session_start();
                     <!-- Application Item 1 -->
                     <div class="application-item">
                         <div class="application-main">
-                            <div class="company-logo"></div>
+                            <div class="company-logo">
+                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
+                                        </div>
                             <div class="application-details">
                                 <h3 class="job-title">Web Developer</h3>
                                 <p class="company-name">Digital Creations Co.</p>
@@ -149,7 +153,9 @@ session_start();
                     <!-- Application Item 2 -->
                     <div class="application-item">
                         <div class="application-main">
-                            <div class="company-logo"></div>
+                            <div class="company-logo">
+                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
+                                        </div>
                             <div class="application-details">
                                 <h3 class="job-title">UI/UX Designer</h3>
                                 <p class="company-name">Creative Solutions</p>
@@ -213,7 +219,9 @@ session_start();
                     <!-- Application Item 3 -->
                     <div class="application-item">
                         <div class="application-main">
-                            <div class="company-logo"></div>
+                            <div class="company-logo">
+                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
+                                        </div>
                             <div class="application-details">
                                 <h3 class="job-title">Marketing Assistant</h3>
                                 <p class="company-name">Global Marketing PH</p>
@@ -280,7 +288,9 @@ session_start();
                     <!-- Application Item 4 -->
                     <div class="application-item">
                         <div class="application-main">
-                            <div class="company-logo"></div>
+                            <div class="company-logo">
+                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
+                                        </div>
                             <div class="application-details">
                                 <h3 class="job-title">Data Analyst</h3>
                                 <p class="company-name">Tech Insights Inc.</p>

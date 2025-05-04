@@ -32,7 +32,9 @@ $employer = new Employers($db);
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="logo-container">
-        <div class="logo"></div>
+         <div class="logo">
+                <img src="../Layouts/logo.png" alt="Profile Picture">
+                </div>
         <h3>Career Hub</h3>
       </div>
 
@@ -51,11 +53,7 @@ $employer = new Employers($db);
             <a href="applications_management.php"><i class="fas fa-file-alt"></i> Applications</a>
           </li>
           <li>
-            <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
-          </li>
-          <li>
-            <a href="#"><i class="fas fa-cog"></i> Settings</a>
-          </li>
+          
           <li class="logout">
             <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
           </li>
@@ -75,7 +73,7 @@ $employer = new Employers($db);
             <span class="notification-badge">5</span>
           </div>
           <div class="user-profile">
-            <img src="../placeholder.jpg" alt="Profile Picture">
+          <img src="../Layouts/emp_icon.png" alt="Profile Picture">
             <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
           </div>
         </div>
@@ -355,70 +353,50 @@ $employer = new Employers($db);
             confirmButtonColor: '#c41e3a',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Update Status'
+
           }).then((result) => {
-            changeStatusButtons.forEach(button => {
-              button.addEventListener('click', function() {
-                Swal.fire({
-                  title: 'Change Application Status',
-                  html: `
-              <select id="status-select" class="swal2-select">
-                <option value="Under Review">Under Review</option>
-                <option value="Shortlisted">Shortlisted</option>
-                <option value="Interview">Interview</option>
-                <option value="Accepted">Offer Sent</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-            `,
-                  showCancelButton: true,
-                  confirmButtonColor: '#c41e3a',
-                  cancelButtonColor: '#6c757d',
-                  confirmButtonText: 'Update Status'
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                    const status = document.getElementById('status-select').value;
-                    const applicationItem = this.closest('.application-item');
-                    const applicationId = applicationItem.dataset.applicationId; // assuming you have a data attribute
-                    const statusText = {
-                      'Under Review': 'Under Review',
-                      'Shortlisted': 'Shortlisted',
-                      'Interview': 'Interview Scheduled',
-                      'Accepted': 'Offer Sent',
-                      'Rejected': 'Rejected'
-                    };
+            if (result.isConfirmed) {
+              const status = document.getElementById('status-select').value;
+              const applicationItem = this.closest('.application-item');
+              const applicationId = applicationItem.dataset.applicationId; // assuming you have a data attribute
+              const statusText = {
+                'Under Review': 'Under Review',
+                'Shortlisted': 'Shortlisted',
+                'Interview': 'Interview Scheduled',
+                'Accepted': 'Offer Sent',
+                'Rejected': 'Rejected'
+              };
 
-                    // Send status to the backend
-                    fetch('update_status.php', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                          application_id: applicationId,
-                          status: status
-                        })
-                      })
-                      .then(response => response.json())
-                      .then(data => {
-                        if (data.success) {
-                          const statusBadge = applicationItem.querySelector('.application-status-badge');
-                          statusBadge.classList.remove('Under Review', 'Shortlisted', 'Interview', 'Accepted', 'Rejected');
-                          statusBadge.classList.add(status);
-                          statusBadge.textContent = statusText[status];
+              // Send status to the backend
+              fetch('update_application_status.php', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    application_id: applicationId,
+                    status: status
+                  })
+                })
+                .then(response => response.json())
+                .then(data => {
+                  if (data.success) {
+                    const statusBadge = applicationItem.querySelector('.application-status-badge');
+                    statusBadge.classList.remove('Under Review', 'Shortlisted', 'Interview', 'Accepted', 'Rejected');
+                    statusBadge.classList.add(status);
+                    statusBadge.textContent = statusText[status];
 
-                          Swal.fire('Updated!', 'The application status has been updated.', 'success');
-                        } else {
-                          Swal.fire('Error', data.message || 'Status update failed.', 'error');
-                        }
-                      })
-                      .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire('Error', 'A network error occurred.', 'error');
-                      });
+                    Swal.fire('Updated!', 'The application status has been updated.', 'success');
+                  } else {
+                    Swal.fire('Error', data.message || 'Status update failed.', 'error');
                   }
-
+                })
+                .catch(error => {
+                  console.error('Error:', error);
+                  Swal.fire('Error', 'A network error occurred.', 'error');
                 });
-              });
-            });
+            }
+
           });
         });
       });

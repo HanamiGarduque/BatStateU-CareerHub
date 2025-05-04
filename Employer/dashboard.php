@@ -8,33 +8,9 @@ if (!isEmployer()) {
   exit();
 }
 
-$emp_id = $_SESSION['id'] ?? null;
-
-
-// try 
-
-  // // Count Active Job Postings
-  // $stmt = $pdo-&gt;query(&quot;SELECT COUNT(*) AS total_jobs FROM jobs&quot;);
-  // $jobsPosted = $stmt-&gt;fetch(PDO::FETCH_ASSOC)[&#39;total_jobs&#39;] ?? 0;
-  
-  // // Count Total Applications
-  // $stmt = $pdo-&gt;query(&quot;SELECT COUNT(*) AS total_applications FROM applications&quot;);
-  // $jobApplications = $stmt-&gt;fetch(PDO::FETCH_ASSOC)[&#39;total_applications&#39;] ?? 0;
-  
-  // // Count Positions Filled
-  // $stmt = $pdo-&gt;query(&quot;SELECT COUNT(*) AS total_filled FROM jobs WHERE status = &#39;accepted&#39;&quot;);
-  
-  // $positionsFilled = $stmt-&gt;fetch(PDO::FETCH_ASSOC)[&#39;total_filled&#39;] ?? 0;
-  
-  // } catch (PDOException $e) {
-  // $dbError = &quot;Database error: &quot; . htmlspecialchars($e-&gt;getMessage());
-  // }
-  
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
-
 
 <head>
   <meta charset="UTF-8">
@@ -50,10 +26,12 @@ $emp_id = $_SESSION['id'] ?? null;
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="logo-container">
-        <div class="logo"></div>
+        <div class="logo">
+          <img src="../Layouts/logo.png" alt="Profile Picture">
+        </div>
         <h3>Career Hub</h3>
       </div>
-      
+
       <nav class="sidebar-nav">
         <ul>
           <li class="active">
@@ -69,11 +47,7 @@ $emp_id = $_SESSION['id'] ?? null;
             <a href="applications_management.php"><i class="fas fa-file-alt"></i> Applications</a>
           </li>
           <li>
-            <a href="notifications.php"><i class="fas fa-bell"></i> Notifications</a>
-          </li>
-          <li>
-            <a href="#"><i class="fas fa-cog"></i> Settings</a>
-          </li>
+
           <li class="logout">
             <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
           </li>
@@ -95,8 +69,8 @@ $emp_id = $_SESSION['id'] ?? null;
             <span class="notification-badge">5</span>
           </div>
           <div class="user-profile">
-            <img src="../placeholder.jpg" alt="Profile Picture">
-            <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
+          <img src="../Layouts/emp_icon.png" alt="Profile Picture">
+          <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
           </div>
         </div>
       </header>
@@ -104,7 +78,7 @@ $emp_id = $_SESSION['id'] ?? null;
       <!-- Dashboard Content -->
       <div class="dashboard-content">
         <h1>Admin Dashboard</h1>
-        
+
         <!-- Stats Container -->
         <div class="stats-container">
           <div class="stat-card">
@@ -116,26 +90,27 @@ $emp_id = $_SESSION['id'] ?? null;
               <p>Active Job Postings</p>
             </div>
           </div>
-          
+
           <div class="stat-card">
             <div class="stat-icon">
               <i class="fas fa-file-alt"></i>
             </div>
             <?php
-$database = new Database();
-$db = $database->getConnect();
-$application = new JobApplication($db);
+            $database = new Database();
+            $db = $database->getConnect();
 
-// Call the stored procedure and get the total
-$totalApplications = $application->totalJobApplications($emp_id);
-?>
+            $emp_id = $_SESSION['id'];
 
-<div class="stat-info">
-<h3><?php echo htmlspecialchars((string)$totalApplications); ?></h3>
-  <p>Total Applications</p>
-</div>
+            $applications = new JobApplication($db);
+            $totalApplications = $applications->getTotalJobApplications($emp_id);
+            ?>
 
-          
+            <div class="stat-info">
+              <h3><?php echo htmlspecialchars((string)$totalApplications); ?></h3>
+              <p>Total Applications</p>
+            </div>
+          </div>
+
           <div class="stat-card">
             <div class="stat-icon">
               <i class="fas fa-user-tie"></i>
@@ -145,7 +120,7 @@ $totalApplications = $application->totalJobApplications($emp_id);
               <p>New Candidates</p>
             </div>
           </div>
-          
+
           <div class="stat-card">
             <div class="stat-icon">
               <i class="fas fa-handshake"></i>
@@ -156,23 +131,25 @@ $totalApplications = $application->totalJobApplications($emp_id);
             </div>
           </div>
         </div>
-        
+
         <!-- Recent Applications -->
         <div class="section-header">
           <h2>Recent Applications</h2>
           <a href="applications_management.php" class="view-all">View All</a>
         </div>
-        
+
         <div class="applications-container">
           <div class="application-card">
             <div class="application-header">
-              <div class="company-logo"></div>
+              <div class="company-logo">
+                <img src="../Layouts/work_icon.png" alt="Job Icon">
+              </div>
               <div class="application-title-container">
                 <h3>Software Developer</h3>
                 <p class="company-name">Tech Solutions Inc.</p>
               </div>
             </div>
-            
+
             <div class="application-details">
               <div class="application-detail">
                 <i class="fas fa-user"></i> John Doe
@@ -184,19 +161,21 @@ $totalApplications = $application->totalJobApplications($emp_id);
                 <i class="fas fa-tag"></i> <span class="application-status-badge pending">Pending Review</span>
               </div>
             </div>
-            
+
             <button class="view-application-btn">View Application</button>
           </div>
-          
+
           <div class="application-card">
             <div class="application-header">
-              <div class="company-logo"></div>
+              <div class="company-logo">
+                <img src="../Layouts/work_icon.png" alt="Job Icon">
+              </div>
               <div class="application-title-container">
                 <h3>Marketing Specialist</h3>
                 <p class="company-name">Global Marketing PH</p>
               </div>
             </div>
-            
+
             <div class="application-details">
               <div class="application-detail">
                 <i class="fas fa-user"></i> Jane Smith
@@ -208,19 +187,21 @@ $totalApplications = $application->totalJobApplications($emp_id);
                 <i class="fas fa-tag"></i> <span class="application-status-badge interview">Interview Scheduled</span>
               </div>
             </div>
-            
+
             <button class="view-application-btn">View Application</button>
           </div>
-          
+
           <div class="application-card">
             <div class="application-header">
-              <div class="company-logo"></div>
+              <div class="company-logo">
+                <img src="../Layouts/work_icon.png" alt="Job Icon">
+              </div>
               <div class="application-title-container">
                 <h3>Graphic Designer</h3>
                 <p class="company-name">Creative Designs Co.</p>
               </div>
             </div>
-            
+
             <div class="application-details">
               <div class="application-detail">
                 <i class="fas fa-user"></i> Mike Johnson
@@ -232,27 +213,29 @@ $totalApplications = $application->totalJobApplications($emp_id);
                 <i class="fas fa-tag"></i> <span class="application-status-badge accepted">Offer Sent</span>
               </div>
             </div>
-            
+
             <button class="view-application-btn">View Application</button>
           </div>
         </div>
-        
+
         <!-- Recent Job Postings -->
         <div class="section-header">
           <h2>Recent Job Postings</h2>
           <a href="job_postings.php" class="view-all">View All</a>
         </div>
-        
+
         <div class="jobs-container">
           <div class="job-card">
             <div class="job-header">
-              <div class="company-logo"></div>
+              <div class="company-logo">
+                <img src="../Layouts/work_icon.png" alt="Job Icon">
+              </div>
               <div class="job-title-container">
                 <h3>Senior Web Developer</h3>
                 <p class="company-name">Tech Solutions Inc.</p>
               </div>
             </div>
-            
+
             <div class="job-details">
               <div class="job-detail">
                 <i class="fas fa-map-marker-alt"></i> Batangas City
@@ -267,26 +250,28 @@ $totalApplications = $application->totalJobApplications($emp_id);
                 <i class="fas fa-calendar"></i> Posted 2 days ago
               </div>
             </div>
-            
+
             <div class="job-description">
               <p>We are looking for an experienced web developer to join our team. The ideal candidate should have strong skills in JavaScript, React, and Node.js.</p>
             </div>
-            
+
             <div class="job-actions">
               <button class="view-btn">Edit Job</button>
               <button class="view-btn">View Applicants (5)</button>
             </div>
           </div>
-          
+
           <div class="job-card">
             <div class="job-header">
-              <div class="company-logo"></div>
+              <div class="company-logo">
+                <img src="../Layouts/work_icon.png" alt="Job Icon">
+              </div>
               <div class="job-title-container">
                 <h3>HR Manager</h3>
                 <p class="company-name">People First Inc.</p>
               </div>
             </div>
-            
+
             <div class="job-details">
               <div class="job-detail">
                 <i class="fas fa-map-marker-alt"></i> Lipa City
@@ -301,11 +286,11 @@ $totalApplications = $application->totalJobApplications($emp_id);
                 <i class="fas fa-calendar"></i> Posted 3 days ago
               </div>
             </div>
-            
+
             <div class="job-description">
               <p>We are seeking an experienced HR Manager to oversee all aspects of human resources management including recruitment, employee relations, and benefits administration.</p>
             </div>
-            
+
             <div class="job-actions">
               <button class="view-btn">Edit Job</button>
               <button class="view-btn">View Applicants (3)</button>
