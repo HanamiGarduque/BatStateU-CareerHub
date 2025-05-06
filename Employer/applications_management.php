@@ -23,6 +23,7 @@ $employer = new Employers($db);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BatStateU Career Hub - Applications Management</title>
   <link rel="stylesheet" href="../Layouts/employer.css">
+  <link rel="stylesheet" href="../Layouts/applications_management.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -32,9 +33,9 @@ $employer = new Employers($db);
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="logo-container">
-         <div class="logo">
-                <img src="../Layouts/logo.png" alt="Profile Picture">
-                </div>
+        <div class="logo">
+          <img src="../Layouts/logo.png" alt="Profile Picture">
+        </div>
         <h3>Career Hub</h3>
       </div>
 
@@ -52,8 +53,6 @@ $employer = new Employers($db);
           <li class="active">
             <a href="applications_management.php"><i class="fas fa-file-alt"></i> Applications</a>
           </li>
-          <li>
-          
           <li class="logout">
             <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
           </li>
@@ -73,7 +72,7 @@ $employer = new Employers($db);
             <span class="notification-badge">5</span>
           </div>
           <div class="user-profile">
-          <img src="../Layouts/emp_icon.png" alt="Profile Picture">
+            <img src="../Layouts/emp_icon.png" alt="Profile Picture">
             <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
           </div>
         </div>
@@ -81,22 +80,22 @@ $employer = new Employers($db);
 
       <!-- Dashboard Content -->
       <div class="dashboard-content">
-        <h1>Applications Management</h1>
+        <div class="content-header">
+          <h1><i class="fas fa-file-alt"></i> Applications Management</h1>
+        </div>
 
         <!-- Applications Filter -->
         <div class="applications-filter">
           <div class="filter-tabs">
-            <button class="filter-tab active" data-filter="all">All Applications (156)</button>
-            <button class="filter-tab" data-filter="pending">Pending Review (42)</button>
-            <button class="filter-tab" data-filter="shortlisted">Shortlisted (28)</button>
-            <button class="filter-tab" data-filter="interview">Interview (35)</button>
-            <button class="filter-tab" data-filter="offered">Offered (18)</button>
-            <button class="filter-tab" data-filter="rejected">Rejected (33)</button>
+            <button class="filter-tab active" data-filter="all">All Applications</button>
+            <button class="filter-tab" data-filter="under review">Under Review</button>
+            <button class="filter-tab" data-filter="shortlisted">Shortlisted</button>
+            <button class="filter-tab" data-filter="interview">Interview</button>
+            <button class="filter-tab" data-filter="Accepted">Accepted</button>
+            <button class="filter-tab" data-filter="rejected">Rejected</button>
           </div>
         </div>
-        <?php
 
-        ?>
         <!-- Applications List -->
         <div class="applications-list">
           <?php
@@ -107,30 +106,47 @@ $employer = new Employers($db);
           if ($num > 0) {
             foreach ($results as $row) {
               $jobseeker_id = $row['user_id'];
+              $application_id = $row['id'];
           ?>
               <div class="application-item">
                 <div class="application-main">
                   <div class="candidate-info">
+                    <div class="candidate-avatar">
+                      <img src="../Layouts/user_icon.png" alt="Applicant Photo">
+                    </div>
                     <div class="candidate-details">
                       <h3 class="candidate-name"><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></h3>
                       <p class="candidate-title"><?php echo htmlspecialchars($row['title']); ?></p>
                       <div class="application-meta">
                         <div class="meta-item"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($row['address']); ?></div>
-                        <div class="meta-item"><i class="fas fa-calendar"></i><?php echo date("F j, Y", strtotime($row['created_at'])); ?></div>
+                        <div class="meta-item"><i class="fas fa-calendar"></i> <?php echo date("F j, Y", strtotime($row['created_at'])); ?></div>
                       </div>
                     </div>
                   </div>
                   <div class="job-applied">
                     <h4><?php echo htmlspecialchars($row['job_title']); ?></h4>
                     <p><?php echo htmlspecialchars($row['company_name']); ?></p>
-                    <span class="application-status-badge interview"><?php echo htmlspecialchars($row['status']); ?></span>
+                    <span class="application-status-badge <?php echo strtolower($row['status']); ?>"><?php echo htmlspecialchars($row['status']); ?></span>
                   </div>
 
                   <div class="application-actions">
-                    <a class="action-btn view-resume-btn" href="../JobSeeker/<?php echo htmlspecialchars($row['resume_path']); ?>" target="_blank" style="text-decoration: none;">
+                    <a class="action-btn view-resume-btn" href="../JobSeeker/<?php echo htmlspecialchars($row['resume_path']); ?>" target="_blank">
                       <i class="fas fa-file-pdf"></i> View Resume
                     </a>
-                    <button class="action-btn change-status-btn"><i class="fas fa-exchange-alt"></i> Change Status</button>
+                    <form action="update_status.php" method="POST" class="status-form">
+                      <input type="hidden" name="application_id" value="<?php echo htmlspecialchars($application_id); ?>">
+                      <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($jobseeker_id); ?>">
+                      <select name="status" class="status-select">
+                        <option value="Under Review" <?php echo $row['status'] == 'Under Review' ? 'selected' : ''; ?>>Under Review</option>
+                        <option value="Shortlisted" <?php echo $row['status'] == 'Shortlisted' ? 'selected' : ''; ?>>Shortlisted</option>
+                        <option value="Interview" <?php echo $row['status'] == 'Interview' ? 'selected' : ''; ?>>Interview</option>
+                        <option value="Accepted" <?php echo $row['status'] == 'Accepted' ? 'selected' : ''; ?>>Accepted</option>
+                        <option value="Rejected" <?php echo $row['status'] == 'Rejected' ? 'selected' : ''; ?>>Rejected</option>
+                      </select>
+                      <button type="submit" class="action-btn change-status-btn">
+                        <i class="fas fa-exchange-alt"></i> Change Status
+                      </button>
+                    </form>
                     <button class="toggle-details-btn"><i class="fas fa-chevron-down"></i></button>
                   </div>
                 </div>
@@ -141,13 +157,15 @@ $employer = new Employers($db);
                       <h4>Skills</h4>
                       <div class="skills-list">
                         <?php
-
                         $skillsClass = new Skills($db);
                         $skills = $skillsClass->retrieveSkills($jobseeker_id);
 
-
-                        foreach ($skills as $skill) {
-                          echo "<span class='skill-tag'>" . htmlspecialchars($skill['skill_name']) . "</span>";
+                        if (!empty($skills)) {
+                          foreach ($skills as $skill) {
+                            echo "<span class='skill-tag'>" . htmlspecialchars($skill['skill_name']) . "</span>";
+                          }
+                        } else {
+                          echo "<p>No skills listed.</p>";
                         }
                         ?>
                       </div>
@@ -155,7 +173,6 @@ $employer = new Employers($db);
 
                     <div class="profile-section">
                       <h4>Experience</h4>
-
                       <?php
                       $experience = new Experiences($db);
                       $stmt = $experience->retrieveExperiences($jobseeker_id);
@@ -179,11 +196,9 @@ $employer = new Employers($db);
                       ?>
                     </div>
 
-
                     <div class="profile-section">
                       <h4>Education</h4>
                       <?php
-
                       $education = new Education($db);
                       $stmt = $education->retrieveEducationalBackground($jobseeker_id);
                       $educations = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -206,79 +221,173 @@ $employer = new Employers($db);
                       ?>
                     </div>
 
-
-
-                    <div class="application-timeline">
-                      <h4>Application Timeline</h4>
-                      <div class="timeline">
-                        <div class="timeline-item active">
-                          <div class="timeline-icon"><i class="fas fa-check"></i></div>
-                          <div class="timeline-content">
-                            <h4>Application Received</h4>
-                            <p>May 15, 2023 at 10:30 AM</p>
-                          </div>
-                        </div>
-
-                        <div class="timeline-item active">
-                          <div class="timeline-icon"><i class="fas fa-check"></i></div>
-                          <div class="timeline-content">
-                            <h4>Resume Screened</h4>
-                            <p>May 16, 2023 at 2:15 PM</p>
-                          </div>
-                        </div>
-
-                        <div class="timeline-item active">
-                          <div class="timeline-icon"><i class="fas fa-check"></i></div>
-                          <div class="timeline-content">
-                            <h4>Interview Scheduled</h4>
-                            <p>May 18, 2023 at 9:45 AM</p>
-                            <div class="interview-details">
-                              <p><strong>Date:</strong> May 22, 2023</p>
-                              <p><strong>Time:</strong> 10:00 AM - 11:30 AM</p>
-                              <p><strong>Location:</strong> Online via Zoom</p>
-                              <p><strong>Interviewer:</strong> Maria Santos, HR Manager</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div class="timeline-item">
-                          <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
-                          <div class="timeline-content">
-                            <h4>Technical Interview</h4>
-                            <p>Pending</p>
-                          </div>
-                        </div>
-
-                        <div class="timeline-item">
-                          <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
-                          <div class="timeline-content">
-                            <h4>Final Decision</h4>
-                            <p>Pending</p>
-                          </div>
-                        </div>
+                    <div class="cover-letter-section">
+                      <h4>Cover Letter</h4>
+                      <div class="cover-letter-content">
+                        <?php
+                        // Check if cover letter exists
+                        if (!empty($row['cover_letter'])) {
+                          echo nl2br(htmlspecialchars($row['cover_letter']));
+                        } else {
+                          echo '<p>No cover letter provided.</p>';
+                        }
+                        ?>
                       </div>
                     </div>
 
+                    <?php
+                    $statusLog = new StatusLog($db);
+                    $statuses = $statusLog->retrieveStatusLog($application_id);
+
+
+                    $customLabels = [
+                      'Under Review' => 'Application Received',
+                      'Shortlisted' => 'Resume Screened',
+                      'Interview' => 'Interview Scheduled',
+                      'Accepted' => 'Application Accepted',
+                      'Rejected' => 'Application Rejected'
+                    ];
+
+                    $allSteps = [
+                      'Under Review',
+                      'Shortlisted',
+                      'Interview',
+                      'Final Decision'
+                    ];
+
+                    echo '<div class="application-timeline">';
+                    echo '<h4>Application Timeline</h4>';
+                    echo '<div class="timeline">';
+
+                    $addedStatuses = array_column($statuses, 'status');
+                    $isUnderReviewChecked = !in_array('Under Review', $addedStatuses); // Check if "Under Review" is missing
+
+                    foreach ($allSteps as $step) {
+                      if ($step == 'Under Review' && $isUnderReviewChecked) {
+                        $timestamp = date("F j, Y \\a\\t g:i A", time());
+                        $label = isset($customLabels[$step]) ? $customLabels[$step] : $step;
+                        echo '
+                      <div class="timeline-item active">
+                        <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                        <div class="timeline-content">
+                          <h4>' . htmlspecialchars($label) . '</h4>
+                          <p>' . $timestamp . '</p>
+                        </div>
+                      </div>';
+                      } elseif ($step == 'Final Decision') {
+                        $decisionMade = false;
+                        $timestamp = '';
+
+                        foreach ($statuses as $s) {
+                          if ($s['status'] == 'Accepted') {
+                            $timestamp = date("F j, Y \\a\\t g:i A", strtotime($s['timestamp']));
+                            $label = 'Application Accepted';
+                            echo '
+                            <div class="timeline-item active">
+                              <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                              <div class="timeline-content">
+                                <h4>' . htmlspecialchars($label) . '</h4>
+                                <p>' . $timestamp . ' </p>
+                              </div>
+                            </div>';
+                            $decisionMade = true;
+                            break;
+                          } elseif ($s['status'] == 'Rejected') {
+                            $timestamp = date("F j, Y \\a\\t g:i A", strtotime($s['timestamp']));
+                            $label = 'Application Rejected';
+                            echo '
+                              <div class="timeline-item active">
+                                <div class="timeline-icon"><i class="fas fa-times"></i></div>
+                                <div class="timeline-content">
+                                  <h4>' . htmlspecialchars($label) . '</h4>
+                                  <p>' . $timestamp . ' </p>
+                                </div>
+                              </div>';
+                            $decisionMade = true;
+                            break;
+                          }
+                        }
+
+                        if (!$decisionMade) {
+                          $label = 'Final Decision';
+                          echo ' 
+                          <div class="timeline-item">
+                            <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
+                            <div class="timeline-content">
+                              <h4>' . htmlspecialchars($label) . '</h4>
+                              <p>Pending</p>
+                            </div>
+                          </div>';
+                        }
+                      } else {
+                        // For other steps, check if they exist in the database and show the appropriate status
+                        if (in_array($step, $addedStatuses)) {
+                          // Find the timestamp for the step
+                          $timestamp = '';
+                          foreach ($statuses as $s) {
+                            if ($s['status'] === $step) {
+                              $timestamp = date("F j, Y \\a\\t g:i A", strtotime($s['timestamp']));
+                              break;
+                            }
+                          }
+                          $label = isset($customLabels[$step]) ? $customLabels[$step] : $step;
+                          echo '
+                          <div class="timeline-item active">
+                            <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                            <div class="timeline-content">
+                              <h4>' . htmlspecialchars($label) . '</h4>
+                              <p>' . $timestamp . '</p>
+                            </div>
+                          </div>';
+                        } else {
+                          // Step is not in the status log, so it is pending
+                          $label = isset($customLabels[$step]) ? $customLabels[$step] : $step;
+                          echo ' 
+                          <div class="timeline-item">
+                            <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
+                            <div class="timeline-content">
+                              <h4>' . htmlspecialchars($label) . '</h4>
+                              <p>Pending</p>
+                            </div>
+                          </div>';
+                        }
+                      }
+                    }
+
+                    echo '</div>';
+                    ?>
 
 
                     <div class="candidate-actions">
-                      <button class="candidate-action-btn"><i class="fas fa-envelope"></i> Email Candidate</button>
-                      <button class="candidate-action-btn"><i class="fas fa-calendar-alt"></i> Schedule Interview</button>
+                       <form action="update_status.php" method="POST" class="interview-form" style="display: inline;">
+                        <input type="hidden" name="application_id" value="<?php echo $application_id; ?>">
+                        <input type="hidden" name="status" value="Interview">
+                        <button type="submit" class="candidate-action-btn">
+                          <i class="fas fa-calendar-alt"></i> Schedule Interview
+                        </button>
+                      </form>
                       <button class="candidate-action-btn"><i class="fas fa-user-check"></i> Move to Shortlist</button>
-                      <button class="candidate-action-btn reject"><i class="fas fa-times"></i> Reject Application</button>
+                      <form action="update_status.php" method="POST" class="reject-form" style="display: inline;">
+                        <input type="hidden" name="application_id" value="<?php echo $application_id; ?>">
+                        <input type="hidden" name="status" value="Rejected">
+                        <button type="submit" class="candidate-action-btn reject">
+                          <i class="fas fa-times"></i> Reject Application
+                        </button>
+                      </form>
+
+
                     </div>
                   </div>
                 </div>
               </div>
-
           <?php
             }
           } else {
-            echo "<p>No applications found.</p>";
+            echo "<div class='no-applications'><i class='fas fa-search'></i><p>No applications found.</p></div>";
           }
           ?>
         </div>
-
+      </div>
     </main>
   </div>
 
@@ -315,6 +424,7 @@ $employer = new Employers($db);
         });
       });
 
+
       // Toggle application details
       const toggleButtons = document.querySelectorAll('.toggle-details-btn');
 
@@ -332,76 +442,32 @@ $employer = new Employers($db);
           }
         });
       });
-
-      // Change application status
-      const changeStatusButtons = document.querySelectorAll('.change-status-btn');
-
-      changeStatusButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          Swal.fire({
-            title: 'Change Application Status',
-            html: `
-              <select id="status-select" class="swal2-select">
-                <option value="Under Review">Under Review</option>
-                <option value="Shortlisted">Shortlisted</option>
-                <option value="Interview">Interview</option>
-                <option value="Accepted">Offer Sent</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-            `,
-            showCancelButton: true,
-            confirmButtonColor: '#c41e3a',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Update Status'
-
-          }).then((result) => {
-            if (result.isConfirmed) {
-              const status = document.getElementById('status-select').value;
-              const applicationItem = this.closest('.application-item');
-              const applicationId = applicationItem.dataset.applicationId; // assuming you have a data attribute
-              const statusText = {
-                'Under Review': 'Under Review',
-                'Shortlisted': 'Shortlisted',
-                'Interview': 'Interview Scheduled',
-                'Accepted': 'Offer Sent',
-                'Rejected': 'Rejected'
-              };
-
-              // Send status to the backend
-              fetch('update_application_status.php', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    application_id: applicationId,
-                    status: status
-                  })
-                })
-                .then(response => response.json())
-                .then(data => {
-                  if (data.success) {
-                    const statusBadge = applicationItem.querySelector('.application-status-badge');
-                    statusBadge.classList.remove('Under Review', 'Shortlisted', 'Interview', 'Accepted', 'Rejected');
-                    statusBadge.classList.add(status);
-                    statusBadge.textContent = statusText[status];
-
-                    Swal.fire('Updated!', 'The application status has been updated.', 'success');
-                  } else {
-                    Swal.fire('Error', data.message || 'Status update failed.', 'error');
-                  }
-                })
-                .catch(error => {
-                  console.error('Error:', error);
-                  Swal.fire('Error', 'A network error occurred.', 'error');
-                });
-            }
-
-          });
-        });
-      });
     });
   </script>
+  <?php
+  if (isset($_SESSION['status_success'])) {
+    echo "<script>
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: '" . $_SESSION['status_success'] . "'
+        });
+    </script>";
+    unset($_SESSION['status_success']);
+  }
+
+  if (isset($_SESSION['status_error'])) {
+    echo "<script>
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: '" . $_SESSION['status_error'] . "'
+        });
+    </script>";
+    unset($_SESSION['status_error']);
+  }
+  ?>
+
 </body>
 
 </html>

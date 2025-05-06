@@ -46,7 +46,6 @@ if (!isEmployer()) {
           <li>
             <a href="applications_management.php"><i class="fas fa-file-alt"></i> Applications</a>
           </li>
-          <li>
 
           <li class="logout">
             <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -56,7 +55,7 @@ if (!isEmployer()) {
     </aside>
 
     <!-- Main Content Area -->
-    <main class="main-content">
+    <main class="main-content"> 
       <!-- Header -->
       <header class="dashboard-header">
         <div class="search-container">
@@ -69,8 +68,8 @@ if (!isEmployer()) {
             <span class="notification-badge">5</span>
           </div>
           <div class="user-profile">
-          <img src="../Layouts/emp_icon.png" alt="Profile Picture">
-          <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
+            <img src="../Layouts/emp_icon.png" alt="Profile Picture">
+            <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
           </div>
         </div>
       </header>
@@ -85,8 +84,20 @@ if (!isEmployer()) {
             <div class="stat-icon">
               <i class="fas fa-briefcase"></i>
             </div>
+            <?php
+            $database = new Database();
+            $db = $database->getConnect();
+
+            $emp_id = $_SESSION['id'];
+
+            $applications = new JobApplication($db);
+            $jobs = new Jobs($db);
+            $totalApplications = $applications->getTotalJobApplications($emp_id);
+            $totalJobPostings = $jobs->countAllJobsPerEmp($emp_id);
+            ?>
+
             <div class="stat-info">
-              <h3>24</h3>
+              <h3><?php echo htmlspecialchars((string)$totalJobPostings); ?></h3>
               <p>Active Job Postings</p>
             </div>
           </div>
@@ -95,15 +106,6 @@ if (!isEmployer()) {
             <div class="stat-icon">
               <i class="fas fa-file-alt"></i>
             </div>
-            <?php
-            $database = new Database();
-            $db = $database->getConnect();
-
-            $emp_id = $_SESSION['id'];
-
-            $applications = new JobApplication($db);
-            $totalApplications = $applications->getTotalJobApplications($emp_id);
-            ?>
 
             <div class="stat-info">
               <h3><?php echo htmlspecialchars((string)$totalApplications); ?></h3>
@@ -116,7 +118,7 @@ if (!isEmployer()) {
               <i class="fas fa-user-tie"></i>
             </div>
             <div class="stat-info">
-              <h3>42</h3>
+              <h3><?php echo htmlspecialchars((string)$totalApplications); ?></h3>
               <p>New Candidates</p>
             </div>
           </div>
@@ -137,169 +139,105 @@ if (!isEmployer()) {
           <h2>Recent Applications</h2>
           <a href="applications_management.php" class="view-all">View All</a>
         </div>
+        <?php
+          $stmt = $applications->retrieveRecentApplications($emp_id);
+          foreach ($stmt as $row) {
+            extract($row); // make sure the row has the correct keys
+            $formatted_date = date("F j, Y", strtotime($row['created_at']));
 
-        <div class="applications-container">
-          <div class="application-card">
-            <div class="application-header">
-              <div class="company-logo">
-                <img src="../Layouts/work_icon.png" alt="Job Icon">
+            echo <<<HTML
+            <div class="applications-container">
+              <div class="application-card">
+                <div class="application-header">
+                  <div class="company-logo">
+                    <img src="../Layouts/work_icon.png" alt="Job Icon">
+                  </div>
+                  <div class="application-title-container">
+                    <h3>{$job_title}</h3>
+                    <p class="company-name">{$company_name}</p>
+                  </div>
+                </div>
+
+                <div class="application-details">
+                  <div class="application-detail">
+                    <i class="fas fa-user"></i> {$first_name} {$last_name}
+                  </div>
+                  <div class="application-detail">
+                    <i class="fas fa-calendar"></i> Applied on {$formatted_date} 
+                  <div class="application-detail">
+                    <i class="fas fa-tag"></i> <span class="application-status-badge pending">{$status}</span>
+                  </div>
+                </div>
+
+                <button class="view-application-btn">View Application</button>
               </div>
-              <div class="application-title-container">
-                <h3>Software Developer</h3>
-                <p class="company-name">Tech Solutions Inc.</p>
-              </div>
+
             </div>
-
-            <div class="application-details">
-              <div class="application-detail">
-                <i class="fas fa-user"></i> John Doe
-              </div>
-              <div class="application-detail">
-                <i class="fas fa-calendar"></i> Applied on May 15, 2023
-              </div>
-              <div class="application-detail">
-                <i class="fas fa-tag"></i> <span class="application-status-badge pending">Pending Review</span>
-              </div>
-            </div>
-
-            <button class="view-application-btn">View Application</button>
-          </div>
-
-          <div class="application-card">
-            <div class="application-header">
-              <div class="company-logo">
-                <img src="../Layouts/work_icon.png" alt="Job Icon">
-              </div>
-              <div class="application-title-container">
-                <h3>Marketing Specialist</h3>
-                <p class="company-name">Global Marketing PH</p>
-              </div>
-            </div>
-
-            <div class="application-details">
-              <div class="application-detail">
-                <i class="fas fa-user"></i> Jane Smith
-              </div>
-              <div class="application-detail">
-                <i class="fas fa-calendar"></i> Applied on May 14, 2023
-              </div>
-              <div class="application-detail">
-                <i class="fas fa-tag"></i> <span class="application-status-badge interview">Interview Scheduled</span>
-              </div>
-            </div>
-
-            <button class="view-application-btn">View Application</button>
-          </div>
-
-          <div class="application-card">
-            <div class="application-header">
-              <div class="company-logo">
-                <img src="../Layouts/work_icon.png" alt="Job Icon">
-              </div>
-              <div class="application-title-container">
-                <h3>Graphic Designer</h3>
-                <p class="company-name">Creative Designs Co.</p>
-              </div>
-            </div>
-
-            <div class="application-details">
-              <div class="application-detail">
-                <i class="fas fa-user"></i> Mike Johnson
-              </div>
-              <div class="application-detail">
-                <i class="fas fa-calendar"></i> Applied on May 12, 2023
-              </div>
-              <div class="application-detail">
-                <i class="fas fa-tag"></i> <span class="application-status-badge accepted">Offer Sent</span>
-              </div>
-            </div>
-
-            <button class="view-application-btn">View Application</button>
-          </div>
-        </div>
-
+            HTML;
+          }
+          ?>
+      </div>
         <!-- Recent Job Postings -->
         <div class="section-header">
           <h2>Recent Job Postings</h2>
           <a href="job_postings.php" class="view-all">View All</a>
         </div>
 
+
         <div class="jobs-container">
-          <div class="job-card">
-            <div class="job-header">
-              <div class="company-logo">
-                <img src="../Layouts/work_icon.png" alt="Job Icon">
-              </div>
-              <div class="job-title-container">
-                <h3>Senior Web Developer</h3>
-                <p class="company-name">Tech Solutions Inc.</p>
-              </div>
-            </div>
+          <?php
+          $stmt = $jobs->retrieveRecentJobs($emp_id);
+          foreach ($stmt as $row) {
+            extract($row);
+            $jobId = $row['job_id'];
 
-            <div class="job-details">
-              <div class="job-detail">
-                <i class="fas fa-map-marker-alt"></i> Batangas City
-              </div>
-              <div class="job-detail">
-                <i class="fas fa-briefcase"></i> Full-time
-              </div>
-              <div class="job-detail">
-                <i class="fas fa-money-bill-wave"></i> ₱50,000 - ₱70,000
-              </div>
-              <div class="job-detail">
-                <i class="fas fa-calendar"></i> Posted 2 days ago
-              </div>
-            </div>
+            $formatted_date = date("F j, Y", strtotime($row['date_posted']));
 
-            <div class="job-description">
-              <p>We are looking for an experienced web developer to join our team. The ideal candidate should have strong skills in JavaScript, React, and Node.js.</p>
-            </div>
+            echo <<<HTML
+            <div class="job-card">
+                <div class="job-header">
+                    <div class="company-logo">
+                        <img src="../Layouts/work_icon.png" alt="Job Icon">
+                    </div>
+                    <div class="job-title-container">
+                        <h3>{$title}</h3>
+                        <p class="company-name">{$company_name}</p>
+                    </div>
+                </div>
 
-            <div class="job-actions">
-              <button class="view-btn">Edit Job</button>
-              <button class="view-btn">View Applicants (5)</button>
-            </div>
-          </div>
+                <div class="job-details">
+                    <div class="job-detail">
+                        <i class="fas fa-map-marker-alt"></i> {$location}
+                    </div>
+                    <div class="job-detail">
+                        <i class="fas fa-briefcase"></i> {$type}
+                    </div>
+                    <div class="job-detail">
+                        <i class="fas fa-money-bill-wave"></i> ₱{$salary_min} - ₱{$salary_max}
+                    </div>
+                    <div class="job-detail">
+                      ` <i class="fas fa-calendar"></i> Posted {$formatted_date}
+                    </div>
 
-          <div class="job-card">
-            <div class="job-header">
-              <div class="company-logo">
-                <img src="../Layouts/work_icon.png" alt="Job Icon">
-              </div>
-              <div class="job-title-container">
-                <h3>HR Manager</h3>
-                <p class="company-name">People First Inc.</p>
-              </div>
-            </div>
+                </div>
 
-            <div class="job-details">
-              <div class="job-detail">
-                <i class="fas fa-map-marker-alt"></i> Lipa City
-              </div>
-              <div class="job-detail">
-                <i class="fas fa-briefcase"></i> Full-time
-              </div>
-              <div class="job-detail">
-                <i class="fas fa-money-bill-wave"></i> ₱40,000 - ₱55,000
-              </div>
-              <div class="job-detail">
-                <i class="fas fa-calendar"></i> Posted 3 days ago
-              </div>
-            </div>
+                <div class="job-description">
+                    <p>{$description}</p>
+                </div>
 
-            <div class="job-description">
-              <p>We are seeking an experienced HR Manager to oversee all aspects of human resources management including recruitment, employee relations, and benefits administration.</p>
-            </div>
+                <div class="job-actions">
+                <button class="view-btn" onclick="window.location.href='edit_job.php?job_id={$jobId}';">Edit Job</button>
+                <button class="view-btn"  onclick="window.location.href='applicants_list.php';">View Applicants1 </button>
+                </div>
+            </div>            
+            HTML;
+            }
 
-            <div class="job-actions">
-              <button class="view-btn">Edit Job</button>
-              <button class="view-btn">View Applicants (3)</button>
-            </div>
-          </div>
+          ?>
+        </div>
         </div>
       </div>
     </main>
   </div>
 </body>
-
 </html>

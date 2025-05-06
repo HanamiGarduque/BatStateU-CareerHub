@@ -141,10 +141,25 @@ class Jobs
         $stmt->closeCursor();
         return $result;
     }
+    public function retrieveRecentJobs($user_id) // done
+    {
+        $stmt = $this->conn->prepare("CALL get_recent_jobs(:user_id)");
+        $stmt->execute([':user_id' => $user_id]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
+    }
     public function countAllJobs()
     {
         $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM " . $this->tbl_name);
         $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['total'];
+    }
+    public function countAllJobsPerEmp($emp_id)
+    {
+        $stmt = $this->conn->prepare("CALL get_job_count_per_employer(:employer_id)");
+        $stmt->execute([':employer_id' => $emp_id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row['total'];
     }
@@ -201,7 +216,7 @@ class Jobs
     public function updateJobById($job_id)
     {
         $stmt = $this->conn->prepare("CALL update_job(:job_id, :user_id, :title, :job_category, :company_name, :location, :type, :salary_min, :salary_max, :description, :responsibilities, :requirements, :benefits_perks)");
-    
+
         $stmt->bindParam(':job_id', $job_id);
         $stmt->bindParam(':user_id', $this->user_id); // ✅ ADD THIS LINE
         $stmt->bindParam(':title', $this->title);
@@ -215,11 +230,11 @@ class Jobs
         $stmt->bindParam(':responsibilities', $this->responsibilities);
         $stmt->bindParam(':requirements', $this->requirements);
         $stmt->bindParam(':benefits_perks', $this->benefits_perks);
-        
+
         return $stmt->execute();
     }
-    
-    
+
+
     public function updateJob($job_id)
     {
         $query = "UPDATE jobs SET 
@@ -379,8 +394,20 @@ class JobApplication
     public function updateApplicationStatus($application_id, $status)
     {
         try {
-            $stmt = $this->conn->prepare("CALL UpdateApplicationStatus(:id, :status)");
-            $stmt->bindParam(':id', $application_id);
+            $stmt = $this->conn->prepare("CALL update_application_status(:application_id, :status)");
+            $stmt->bindParam(':application_id', $application_id);
+            $stmt->bindParam(':status', $status);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Databas  e error: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function insertToStatusLog($user_id, $status)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL insert_to_status_log(:user_id, :status)");
+            $stmt->bindParam(':user_id', $user_id);
             $stmt->bindParam(':status', $status);
             return $stmt->execute();
         } catch (PDOException $e) {
@@ -388,6 +415,16 @@ class JobApplication
             return false;
         }
     }
+    public function getApplicationById($application_id)
+    {
+        $query = "SELECT status FROM applications WHERE id = :application_id LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':application_id', $application_id);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function retrieveNoOfApplications($status, $job_id)
     {
         $stmt = $this->conn->prepare("CALL get_no_of_applications(:status, :job_id)");
@@ -408,7 +445,14 @@ class JobApplication
         $stmt->closeCursor(); // Very important!
         return $result['total'] ?? 0;
     }
-    
+    public function retrieveRecentApplications($user_id) // done
+    {
+        $stmt = $this->conn->prepare("CALL get_recent_applications(:user_id)");
+        $stmt->execute([':user_id' => $user_id]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
+    }
 }
 class Education
 {
@@ -589,4 +633,25 @@ class Skills
         $stmt->bindParam(':skill_id', $skill_id);
         return $stmt->execute();
     }
+}
+
+class StatusLog
+{
+    private $conn;
+
+    public function __construct($db)
+    {
+        $this->conn = $db;
+    }
+
+    public function retrieveStatusLog($application_id)
+{
+    $query = "SELECT status, timestamp FROM status_log WHERE application_id = :application_id ORDER BY timestamp ASC";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(":application_id", $application_id);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC); // fetchAll instead of get_result()
+    return $result;
+}
+
 }

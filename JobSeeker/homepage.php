@@ -16,7 +16,6 @@ $user_id = $_SESSION['id'] ?? null; // Get the user ID from the session
 // Get the search keyword from the request
 $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
 
-// Retrieve jobs based on the keyword
 
 $stmt = $jobs->searchJobs($keyword);
 

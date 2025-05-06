@@ -1023,7 +1023,7 @@
     align-items: center;
   }
   
-  .view-resume-btn, .change-status-btn {
+  .view-resume-btn, .change-status-btn, .status{
     padding: 0.5rem 0.8rem;
     border-radius: 4px;
     font-size: 0.85rem;
@@ -1049,13 +1049,13 @@
   }
   
   .change-status-btn {
-    background-color: transparent;
-    color: #3b82f6;
+    background-color: #3b82f6;
+    color: white;
     border: 1px solid #3b82f6;
   }
   
   .change-status-btn:hover {
-    background-color: #3b82f6;
+    background-color: #2456a6;
     color: white;
   }
   
@@ -1652,7 +1652,7 @@
   flex-direction: column;
   gap: 1.5rem;
 }
-
+.cover-letter-section,
 .profile-section {
   background-color: white;
   border-radius: 8px;
@@ -1660,6 +1660,7 @@
   overflow: hidden;
   padding: 2rem;
 }
+
 
 .section-header {
   padding: 1rem 1.5rem;
@@ -2045,4 +2046,10 @@ input:checked + .swal-toggle-label:before {
     width: 100%;
     justify-content: center;
   }
+}
+.custom-swal-select {
+  width: 534px !important;   /* Adjust width */
+  max-width: 100%;
+  font-size: 14px;           /* Adjust font size */
+  padding: 8px;              /* Optional padding */
 }
