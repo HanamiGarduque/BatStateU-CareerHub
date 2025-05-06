@@ -26,7 +26,7 @@ class Users
         $stmt = $this->conn->prepare("CALL get_user_status(:email)");
         $stmt->execute([':email' => $email]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return ($row && $row['status'] === 'banned');
+        return ($row && $row['status'] === 'suspended');
     }
 
     // Check if email already exists
@@ -103,6 +103,24 @@ class Users
             }
         } catch (PDOException $e) {
             echo "Error: " . $e->getMessage();
+            return false;
+        }
+    }
+
+    public function getAllUsers() {
+        $stmt = $this->conn->prepare("CALL get_all_users()");
+        $stmt->execute(); // no parameters needed
+        return $stmt;
+    }
+    
+    public function updateUserStatus ($user_id, $status) {
+        $stmt = $this->conn->prepare("CALL update_user_status(:user_id, :new_status)");
+        $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+        $stmt->bindParam(':new_status', $status);
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            echo "Failed to update user status.";
             return false;
         }
     }

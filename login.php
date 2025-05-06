@@ -53,7 +53,7 @@ session_start();
             $role = $row['roles'];
             $status = trim($row['status']);
 
-            if ($status === 'banned') {
+            if ($status === 'suspended') {
                 echo '<script>
                 Swal.fire({
                     icon: "error",
