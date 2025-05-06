@@ -1,5 +1,18 @@
 <?php
-session_start();
+require_once '../check_session.php';
+require_once '../Database/crud_functions.php';
+require_once '../Database/db_connections.php';
+
+if (!isJobseeker()) {
+    header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
+    exit();
+}
+
+$database = new Database();
+$db = $database->getConnect();
+
+$application = new JobApplication($db);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -9,6 +22,8 @@ session_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BatStateU Career Hub - My Applications</title>
     <link rel="stylesheet" href="../Layouts/jobseeker.css">
+    <link rel="stylesheet" href="../Layouts/job_details.css">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -18,12 +33,12 @@ session_start();
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-container">
-                 <div class="logo">
-                <img src="../Layouts/logo.png" alt="Profile Picture">
+                <div class="logo">
+                    <img src="../Layouts/logo.png" alt="Profile Picture">
                 </div>
                 <h3>Career Hub</h3>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <ul>
                     <li>
@@ -32,7 +47,8 @@ session_start();
                     <li>
                         <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
                     </li>
-                    <li class="active">                        <a href="applications_management.php"><i class="fas fa-file-alt"></i> My Applications</a>
+                    <li class="active">
+                        <a href="applications_management.php"><i class="fas fa-file-alt"></i> My Applications</a>
                     </li>
                     <li>
                         <a href="saved_jobs.php"><i class="fas fa-bookmark"></i> Saved Jobs</a>
@@ -67,7 +83,7 @@ session_start();
             <!-- Applications Content -->
             <div class="dashboard-content">
                 <h1>My Applications</h1>
-                
+
                 <!-- Applications Filter -->
                 <div class="applications-filter">
                     <div class="filter-tabs">
@@ -77,7 +93,7 @@ session_start();
                         <button class="filter-tab" data-filter="accepted">Accepted (1)</button>
                         <button class="filter-tab" data-filter="rejected">Rejected (2)</button>
                     </div>
-                    
+
                     <div class="filter-options">
                         <select class="sort-select">
                             <option value="recent">Most Recent</option>
@@ -87,289 +103,277 @@ session_start();
                         </select>
                     </div>
                 </div>
-                
+
                 <!-- Applications List -->
                 <div class="applications-list">
-                    <!-- Application Item 1 -->
-                    <div class="application-item">
-                        <div class="application-main">
-                            <div class="company-logo">
+                    <?php
+                    $emp_id = $_SESSION['id'];
+
+                    $results = $application->retrieveUserApplications($emp_id);
+                    $num = count($results);
+
+                    if ($num > 0) {
+                        foreach ($results as $row) {
+                            $application_id = $row['id'];
+
+                            echo <<<HTML
+                            <div class="job-card" data-job-id="
+                            HTML;
+                            echo htmlspecialchars($row['job_id']);
+                            echo <<<HTML
+                                                            ">
+                                HTML;
+                    ?>
+                            <div class="application-item">
+                                <div class="application-main">
+                                    <div class="company-logo">
                                         <img src="../Layouts/work_icon.png" alt="Job Icon">
-                                        </div>
-                            <div class="application-details">
-                                <h3 class="job-title">Web Developer</h3>
-                                <p class="company-name">Digital Creations Co.</p>
-                                <div class="application-meta">
-                                    <span class="meta-item"><i class="fas fa-calendar"></i> Applied: May 15, 2023</span>
-                                    <span class="meta-item"><i class="fas fa-map-marker-alt"></i> Batangas City</span>
-                                    <span class="meta-item"><i class="fas fa-briefcase"></i> Full-time</span>
-                                </div>
-                            </div>
-                            <div class="application-status">
-                                <div class="application-status-badge pending">Pending</div>
-                                <button class="toggle-details-btn"><i class="fas fa-chevron-down"></i></button>
-                            </div>
-                        </div>
-                        
-                        <div class="application-details-expanded">
-                            <div class="timeline">
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-paper-plane"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Application Submitted</h4>
-                                        <p>May 15, 2023 at 10:30 AM</p>
                                     </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-icon"><i class="fas fa-eye"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Application Viewed</h4>
-                                        <p>Pending</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-icon"><i class="fas fa-phone"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Interview</h4>
-                                        <p>Pending</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-icon"><i class="fas fa-check-circle"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Decision</h4>
-                                        <p>Pending</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="application-actions">
-                                <button class="view-job-btn"><i class="fas fa-external-link-alt"></i> View Job</button>
-                                <button class="withdraw-btn"><i class="fas fa-times"></i> Withdraw Application</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Application Item 2 -->
-                    <div class="application-item">
-                        <div class="application-main">
-                            <div class="company-logo">
-                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
-                                        </div>
-                            <div class="application-details">
-                                <h3 class="job-title">UI/UX Designer</h3>
-                                <p class="company-name">Creative Solutions</p>
-                                <div class="application-meta">
-                                    <span class="meta-item"><i class="fas fa-calendar"></i> Applied: May 10, 2023</span>
-                                    <span class="meta-item"><i class="fas fa-map-marker-alt"></i> Lipa City</span>
-                                    <span class="meta-item"><i class="fas fa-briefcase"></i> Full-time</span>
-                                </div>
-                            </div>
-                            <div class="application-status">
-                                <div class="application-status-badge interview">Interview</div>
-                                <button class="toggle-details-btn"><i class="fas fa-chevron-down"></i></button>
-                            </div>
-                        </div>
-                        
-                        <div class="application-details-expanded">
-                            <div class="timeline">
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-paper-plane"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Application Submitted</h4>
-                                        <p>May 10, 2023 at 2:15 PM</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-eye"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Application Viewed</h4>
-                                        <p>May 12, 2023 at 11:45 AM</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-phone"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Interview Scheduled</h4>
-                                        <p>May 20, 2023 at 10:00 AM</p>
-                                        <div class="interview-details">
-                                            <p><strong>Type:</strong> Video Call (Zoom)</p>
-                                            <p><strong>Contact:</strong> Maria Santos, HR Manager</p>
-                                            <p><strong>Notes:</strong> Please prepare a 10-minute presentation of your portfolio.</p>
-                                            <button class="add-calendar-btn"><i class="fas fa-calendar-plus"></i> Add to Calendar</button>
+                                    <div class="application-details">
+                                        <h3 class="job-title"><?php echo htmlspecialchars($row['job_title']); ?></h3>
+                                        <p class="company-name"><?php echo htmlspecialchars($row['company_name']); ?></p>
+                                        <div class="application-meta">
+                                            <span class="meta-item"><i class="fas fa-calendar"></i> Applied: <?php echo date("F j, Y", strtotime($row['created_at'])); ?></span>
+                                            <span class="meta-item"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($row['location']); ?></span>
+                                            <span class="meta-item"><i class="fas fa-briefcase"></i> <?php echo htmlspecialchars($row['type']); ?></span>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-icon"><i class="fas fa-check-circle"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Decision</h4>
-                                        <p>Pending</p>
+                                    <div class="application-status">
+                                        <div class="application-status-badge pending"><?php echo htmlspecialchars($row['status']); ?></div>
+                                        <button class="toggle-details-btn"><i class="fas fa-chevron-down"></i></button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="application-actions">
-                                <button class="view-job-btn"><i class="fas fa-external-link-alt"></i> View Job</button>
-                                <button class="withdraw-btn"><i class="fas fa-times"></i> Withdraw Application</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Application Item 3 -->
-                    <div class="application-item">
-                        <div class="application-main">
-                            <div class="company-logo">
-                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
-                                        </div>
-                            <div class="application-details">
-                                <h3 class="job-title">Marketing Assistant</h3>
-                                <p class="company-name">Global Marketing PH</p>
-                                <div class="application-meta">
-                                    <span class="meta-item"><i class="fas fa-calendar"></i> Applied: May 5, 2023</span>
-                                    <span class="meta-item"><i class="fas fa-map-marker-alt"></i> Batangas City</span>
-                                    <span class="meta-item"><i class="fas fa-briefcase"></i> Part-time</span>
-                                </div>
-                            </div>
-                            <div class="application-status">
-                                <div class="application-status-badge accepted">Accepted</div>
-                                <button class="toggle-details-btn"><i class="fas fa-chevron-down"></i></button>
-                            </div>
-                        </div>
-                        
-                        <div class="application-details-expanded">
-                            <div class="timeline">
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-paper-plane"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Application Submitted</h4>
-                                        <p>May 5, 2023 at 9:20 AM</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-eye"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Application Viewed</h4>
-                                        <p>May 6, 2023 at 3:30 PM</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-phone"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Interview Completed</h4>
-                                        <p>May 10, 2023 at 2:00 PM</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-check-circle"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Offer Extended</h4>
-                                        <p>May 15, 2023 at 11:15 AM</p>
-                                        <div class="offer-details">
-                                            <p><strong>Position:</strong> Marketing Assistant</p>
-                                            <p><strong>Salary:</strong> ₱22,000 per month</p>
-                                            <p><strong>Start Date:</strong> June 1, 2023</p>
-                                            <div class="offer-actions">
-                                                <button class="accept-offer-btn"><i class="fas fa-check"></i> Accept Offer</button>
-                                                <button class="decline-offer-btn"><i class="fas fa-times"></i> Decline</button>
+
+                                <div class="application-details-expanded">
+                                    <?php
+                                    $statusLog = new StatusLog($db);
+                                    $statuses = $statusLog->retrieveStatusLog($application_id);
+
+
+                                    $customLabels = [
+                                        'Under Review' => 'Application Received',
+                                        'Shortlisted' => 'Resume Screened',
+                                        'Interview' => 'Interview Scheduled',
+                                        'Accepted' => 'Application Accepted',
+                                        'Rejected' => 'Application Rejected'
+                                    ];
+
+                                    $allSteps = [
+                                        'Under Review',
+                                        'Shortlisted',
+                                        'Interview',
+                                        'Final Decision'
+                                    ];
+                                    echo '<div class="timeline">';
+                                    $addedStatuses = array_column($statuses, 'status');
+                                    $isUnderReviewChecked = !in_array('Under Review', $addedStatuses); // Check if "Under Review" is missing
+
+                                    foreach ($allSteps as $step) {
+                                        if ($step == 'Under Review' && $isUnderReviewChecked) {
+                                            $timestamp = date("F j, Y \\a\\t g:i A", time());
+                                            $label = isset($customLabels[$step]) ? $customLabels[$step] : $step;
+                                            echo '
+                                        <div class="timeline-item active">
+                                            <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                                            <div class="timeline-content">
+                                            <h4>' . htmlspecialchars($label) . '</h4>
+                                            <p>' . $timestamp . '</p>
                                             </div>
-                                        </div>
+                                        </div>';
+                                        } elseif ($step == 'Final Decision') {
+                                            $decisionMade = false;
+                                            $timestamp = '';
+
+                                            foreach ($statuses as $s) {
+                                                if ($s['status'] == 'Accepted') {
+                                                    $timestamp = date("F j, Y \\a\\t g:i A", strtotime($s['timestamp']));
+                                                    $label = 'Application Accepted';
+                                                    echo '
+                                            <div class="timeline-item active">
+                                              <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                                              <div class="timeline-content">
+                                                <h4>' . htmlspecialchars($label) . '</h4>
+                                                <p>' . $timestamp . ' </p>
+                                              </div>    
+                                            </div>';
+                                                    $decisionMade = true;
+                                                    break;
+                                                } elseif ($s['status'] == 'Rejected') {
+                                                    $timestamp = date("F j, Y \\a\\t g:i A", strtotime($s['timestamp']));
+                                                    $label = 'Application Rejected';
+                                                    echo '
+                                              <div class="timeline-item active">
+                                                <div class="timeline-icon"><i class="fas fa-times"></i></div>
+                                                <div class="timeline-content">
+                                                  <h4>' . htmlspecialchars($label) . '</h4>
+                                                  <p>' . $timestamp . ' </p>
+                                                </div>
+                                              </div>';
+                                                    $decisionMade = true;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (!$decisionMade) {
+                                                $label = 'Final Decision';
+                                                echo ' 
+                                          <div class="timeline-item">
+                                            <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
+                                            <div class="timeline-content">
+                                              <h4>' . htmlspecialchars($label) . '</h4>
+                                              <p>Pending</p>
+                                            </div>
+                                          </div>';
+                                            }
+                                        } else {
+                                            // For other steps, check if they exist in the database and show the appropriate status
+                                            if (in_array($step, $addedStatuses)) {
+                                                // Find the timestamp for the step
+                                                $timestamp = '';
+                                                foreach ($statuses as $s) {
+                                                    if ($s['status'] === $step) {
+                                                        $timestamp = date("F j, Y \\a\\t g:i A", strtotime($s['timestamp']));
+                                                        break;
+                                                    }
+                                                }
+                                                $label = isset($customLabels[$step]) ? $customLabels[$step] : $step;
+                                                echo '
+                                          <div class="timeline-item active">
+                                            <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                                            <div class="timeline-content">
+                                              <h4>' . htmlspecialchars($label) . '</h4>
+                                              <p>' . $timestamp . '</p>
+                                            </div>
+                                          </div>';
+                                            } else {
+                                                // Step is not in the status log, so it is pending
+                                                $label = isset($customLabels[$step]) ? $customLabels[$step] : $step;
+                                                echo ' 
+                                          <div class="timeline-item">
+                                            <div class="timeline-icon"><i class="fas fa-hourglass-half"></i></div>
+                                            <div class="timeline-content">
+                                              <h4>' . htmlspecialchars($label) . '</h4>
+                                              <p>Pending</p>
+                                            </div>
+                                          </div>';
+                                            }
+                                        }
+                                    }
+
+                                    echo '</div>';
+                                    ?>
+
+                                    <div class="application-actions">
+                                        <button class="view-job-btn" data-job-id="<?php echo htmlspecialchars($row['job_id']); ?>"><i class="fas fa-external-link-alt"></i>View Job</button>
                                     </div>
+                                    <div class="job-data" style="display: none;">
+                                        <div class="job-responsibilities"><?php echo htmlspecialchars($row['responsibilities']); ?></div>
+                                        <div class="job-requirements"><?php echo htmlspecialchars($row['requirements']); ?></div>
+                                        <div class="job-benefits"><?php echo htmlspecialchars($row['benefits_perks']); ?></div>
+                                        <div class="job-posted-date"><?php echo htmlspecialchars($row['date_posted']); ?></div>
+                                        
+                                    </div>  
                                 </div>
                             </div>
-                            
-                            <div class="application-actions">
-                                <button class="view-job-btn"><i class="fas fa-external-link-alt"></i> View Job</button>
-                                <button class="contact-employer-btn"><i class="fas fa-envelope"></i> Contact Employer</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Application Item 4 -->
-                    <div class="application-item">
-                        <div class="application-main">
-                            <div class="company-logo">
-                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
-                                        </div>
-                            <div class="application-details">
-                                <h3 class="job-title">Data Analyst</h3>
-                                <p class="company-name">Tech Insights Inc.</p>
-                                <div class="application-meta">
-                                    <span class="meta-item"><i class="fas fa-calendar"></i> Applied: April 28, 2023</span>
-                                    <span class="meta-item"><i class="fas fa-map-marker-alt"></i> Tanauan</span>
-                                    <span class="meta-item"><i class="fas fa-briefcase"></i> Full-time</span>
-                                </div>
-                            </div>
-                            <div class="application-status">
-                                <div class="application-status-badge rejected">Rejected</div>
-                                <button class="toggle-details-btn"><i class="fas fa-chevron-down"></i></button>
-                            </div>
-                        </div>
-                        
-                        <div class="application-details-expanded">
-                            <div class="timeline">
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-paper-plane"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Application Submitted</h4>
-                                        <p>April 28, 2023 at 4:45 PM</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-eye"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Application Viewed</h4>
-                                        <p>May 2, 2023 at 10:20 AM</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-icon"><i class="fas fa-phone"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Interview</h4>
-                                        <p>Not Selected</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item active">
-                                    <div class="timeline-icon"><i class="fas fa-times-circle"></i></div>
-                                    <div class="timeline-content">
-                                        <h4>Application Rejected</h4>
-                                        <p>May 5, 2023 at 2:30 PM</p>
-                                        <div class="rejection-details">
-                                            <p><strong>Feedback:</strong> Thank you for your interest in the Data Analyst position. While we were impressed with your qualifications, we have decided to move forward with candidates whose experience more closely aligns with our current needs.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="application-actions">
-                                <button class="view-job-btn"><i class="fas fa-external-link-alt"></i> View Job</button>
-                                <button class="view-similar-jobs-btn"><i class="fas fa-search"></i> View Similar Jobs</button>
-                            </div>
-                        </div>
-                    </div>
+                    <?php
+                    echo $row['job_id'];
+                            echo '</div>';
+                        }
+                    } else {
+                        echo "<div class='no-applications'><i class='fas fa-search'></i><p>No applications found.</p></div>";
+                    }
+                    ?>
                 </div>
-                
-                <!-- Pagination -->
-                <div class="pagination">
-                    <button class="pagination-btn prev"><i class="fas fa-chevron-left"></i></button>
-                    <button class="pagination-btn active">1</button>
-                    <button class="pagination-btn">2</button>
-                    <button class="pagination-btn next"><i class="fas fa-chevron-right"></i></button>
-                </div>
+
+
             </div>
         </main>
     </div>
+    <!-- Job Details Modal -->
+    <div class="modal-overlay" id="jobDetailsModal">
+        <div class="job-details-modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="modal-company-logo">
+                        <img src="../Layouts/work_icon.png" alt="Company Logo">
+                    </div>
+                    <div class="modal-job-title">
+                        <h2 id="modalJobTitle">Job Title</h2>
+                        <p class="modal-company-name" id="modalCompanyName">Company Name</p>
+                    </div>
+                </div>
+                <button class="modal-close" id="closeModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="job-overview">
+                    <div class="job-overview-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="modalLocation">Location</span>
+                    </div>
+                    <div class="job-overview-item">
+                        <i class="fas fa-briefcase"></i>
+                        <span id="modalJobType">Job Type</span>
+                    </div>
+                    <div class="job-overview-item">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span id="modalSalary">Salary Range</span>
+                    </div>
+                </div>
+                <div class="job-content">
+                    <div class="job-section">
+                        <h3 class="job-section-title">Job Description</h3>
+                        <div class="job-section-content" id="modalDescription">
+                        </div>
+                    </div>
+                    <div class="job-section">
+                        <h3 class="job-section-title">Responsibilities</h3>
+                        <div class="job-section-content" id="modalResponsibilities">
+                        </div>
+                    </div>
+                    <div class="job-section">
+                        <h3 class="job-section-title">Requirements</h3>
+                        <div class="job-section-content" id="modalRequirements">
+                        </div>
+                    </div>
+                    <div class="job-section">
+                        <h3 class="job-section-title">Benefits & Perks</h3>
+                        <div class="job-section-content" id="modalBenefits">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-actions">
+                    <a href="#" id="modalApplyBtn" class="modal-btn apply-modal-btn">
+                        <i class="fas fa-paper-plane"></i> Apply Now
+                    </a>
+                    <button id="modalSaveBtn" class="modal-btn save-modal-btn">
+                        <i class="fas fa-bookmark"></i> Save Job
+                    </button>
+                </div>
+                <div class="job-posted">
+                    Posted on <span id="modalPostedDate">Date</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Toggle application details
+        // Improved modal functionality
         document.addEventListener('DOMContentLoaded', function() {
             const toggleButtons = document.querySelectorAll('.toggle-details-btn');
-            
+            const modal = document.getElementById('jobDetailsModal');
+            const closeModalBtn = document.getElementById('closeModal');
+            const viewJobButtons = document.querySelectorAll('.view-job-btn'); // Changed from .view-btn to .view-job-btn
+            const modalApplyBtn = document.getElementById('modalApplyBtn');
+            const modalSaveBtn = document.getElementById('modalSaveBtn');
+
+            // Toggle application details
             toggleButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const applicationItem = this.closest('.application-item');
                     const detailsSection = applicationItem.querySelector('.application-details-expanded');
-                    
+
                     // Toggle expanded details
                     if (detailsSection.style.display === 'block') {
                         detailsSection.style.display = 'none';
@@ -380,23 +384,169 @@ session_start();
                     }
                 });
             });
-            
+
             // Filter tabs
             const filterTabs = document.querySelectorAll('.filter-tab');
-            
             filterTabs.forEach(tab => {
                 tab.addEventListener('click', function() {
                     // Remove active class from all tabs
                     filterTabs.forEach(t => t.classList.remove('active'));
-                    
+
                     // Add active class to clicked tab
                     this.classList.add('active');
-                    
+
                     // Filter logic would go here
                     const filter = this.getAttribute('data-filter');
                     console.log('Filter by:', filter);
                 });
             });
+
+            // Modal functionality
+            closeModalBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // View Job button functionality
+            viewJobButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const jobId = this.getAttribute('data-job-id');
+                    console.log('View job clicked:', jobId);
+
+                    // Fetch job details using AJAX
+                    fetchJobDetails(jobId);
+
+                    // Show modal
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            // Function to fetch job details
+            function fetchJobDetails(jobId) {
+                // You'll need to create this PHP endpoint
+                fetch(`get_job_details.php?job_id=${jobId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update modal with job details
+                        document.getElementById('modalJobTitle').textContent = data.job_title;
+                        document.getElementById('modalCompanyName').textContent = data.company_name;
+                        document.getElementById('modalLocation').textContent = data.location;
+                        document.getElementById('modalJobType').textContent = data.type;
+                        document.getElementById('modalSalary').textContent = formatContent(data.salary) || 'Not disclosed';
+                        document.getElementById('modalDescription').innerHTML = formatContent(data.description);
+                        document.getElementById('modalResponsibilities').innerHTML = formatContent(data.responsibilities);
+                        document.getElementById('modalRequirements').innerHTML = formatContent(data.requirements);
+                        document.getElementById('modalBenefits').innerHTML = formatContent(data.benefits);
+                        document.getElementById('modalPostedDate').textContent = formatDate(data.date_posted);
+
+                        // Update apply button
+                        modalApplyBtn.href = `applying_job.php?job_id=${jobId}`;
+
+                        // Check if job is saved
+                        checkIfJobSaved(jobId);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching job details:', error);
+                        // Simple fallback for error
+                        document.getElementById('modalJobTitle').textContent = 'Error loading job details';
+                        document.getElementById('modalDescription').innerHTML = '<p>There was an error loading the job details. Please try again later.</p>';
+                    });
+            }
+
+            // Function to check if job is saved
+            function checkIfJobSaved(jobId) {
+                // You'll need to implement this endpoint
+                fetch(`check_saved_job.php?job_id=${jobId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        modalSaveBtn.classList.toggle('saved', data.is_saved);
+                        modalSaveBtn.dataset.jobId = jobId;
+                    })
+                    .catch(error => {
+                        console.error('Error checking saved status:', error);
+                    });
+            }
+
+            // Modal Save button functionality
+            modalSaveBtn.addEventListener('click', function() {
+                const jobId = this.dataset.jobId;
+                const isSaved = this.classList.contains('saved');
+
+                // Toggle saved status
+                fetch(`save_job.php?job_id=${jobId}&action=${isSaved ? 'unsave' : 'save'}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.classList.toggle('saved');
+                            // Update icon and text if needed
+                            this.innerHTML = this.classList.contains('saved') ?
+                                '<i class="fas fa-bookmark"></i> Saved' :
+                                '<i class="far fa-bookmark"></i> Save Job';
+
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: data.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saving job:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'There was an error saving this job. Please try again.'
+                        });
+                    });
+            });
+
+            // Helper function to format content with bullet points
+            function formatContent(content) {
+                if (!content) return '<p>No information provided.</p>';
+
+                // Check if content already has HTML formatting
+                if (content.includes('<ul>') || content.includes('<li>')) {
+                    return content;
+                }
+
+                // Split by new lines or bullet points
+                const lines = content.split(/\n|•/).filter(line => line.trim() !== '');
+
+                // If there's only one line, return it as a paragraph
+                if (lines.length === 1) {
+                    return `<p>${lines[0]}</p>`;
+                }
+
+                // Otherwise, format as a list
+                return `<ul>${lines.map(line => `<li>${line.trim()}</li>`).join('')}</ul>`;
+            }
+
+            // Helper function to format date
+            function formatDate(dateString) {
+                if (!dateString) return 'Unknown date';
+
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString;
+
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
         });
     </script>
 </body>

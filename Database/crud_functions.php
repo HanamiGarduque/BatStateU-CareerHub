@@ -107,13 +107,15 @@ class Users
         }
     }
 
-    public function getAllUsers() {
+    public function getAllUsers()
+    {
         $stmt = $this->conn->prepare("CALL get_all_users()");
         $stmt->execute(); // no parameters needed
         return $stmt;
     }
-    
-    public function updateUserStatus ($user_id, $status) {
+
+    public function updateUserStatus($user_id, $status)
+    {
         $stmt = $this->conn->prepare("CALL update_user_status(:user_id, :new_status)");
         $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
         $stmt->bindParam(':new_status', $status);
@@ -323,7 +325,6 @@ class Bookmarks
         return $stmt->execute([$user_id, $saved_jobs_id]);
     }
 }
-
 class Employers
 {
     private $conn;
@@ -469,6 +470,15 @@ class JobApplication
         $stmt->execute([':user_id' => $user_id]);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
+        return $result;
+    }
+
+    public function retrieveUserApplications($user_id)
+    {
+        $stmt = $this->conn->prepare("CALL get_applications(:user_id)");
+        $stmt->execute([':user_id' => $user_id]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);  // Fetch all rows
+        $stmt->closeCursor(); // Very important!
         return $result;
     }
 }
@@ -663,13 +673,12 @@ class StatusLog
     }
 
     public function retrieveStatusLog($application_id)
-{
-    $query = "SELECT status, timestamp FROM status_log WHERE application_id = :application_id ORDER BY timestamp ASC";
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(":application_id", $application_id);
-    $stmt->execute();
-    $result = $stmt->fetchAll(PDO::FETCH_ASSOC); // fetchAll instead of get_result()
-    return $result;
-}
-
+    {
+        $query = "SELECT status, timestamp FROM status_log WHERE application_id = :application_id ORDER BY timestamp ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":application_id", $application_id);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC); // fetchAll instead of get_result()
+        return $result;
+    }
 }
