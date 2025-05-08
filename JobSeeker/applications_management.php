@@ -86,11 +86,11 @@ $jobs = new Jobs($db);
                 <!-- Applications Filter -->
                 <div class="applications-filter">
                     <div class="filter-tabs">
-                        <button class="filter-tab active" data-filter="all">All Applications (8)</button>
-                        <button class="filter-tab" data-filter="pending">Pending (3)</button>
-                        <button class="filter-tab" data-filter="interview">Interview (2)</button>
-                        <button class="filter-tab" data-filter="accepted">Accepted (1)</button>
-                        <button class="filter-tab" data-filter="rejected">Rejected (2)</button>
+                        <button class="filter-tab active" data-filter="all">All Applications</button>
+                        <button class="filter-tab" data-filter="pending">Pending</button>
+                        <button class="filter-tab" data-filter="interview">Interview</button>
+                        <button class="filter-tab" data-filter="accepted">Accepted</button>
+                        <button class="filter-tab" data-filter="rejected">Rejected</button>
                     </div>
 
                     <div class="filter-options">
@@ -118,7 +118,7 @@ $jobs = new Jobs($db);
 
                             // Get full job details for the modal
                             $jobDetails = $jobs->retrieveJobById($job_id);
-                            $jobData = $jobDetails->fetch(PDO::FETCH_ASSOC);
+                            $jobData = $jobDetails;
 
                             echo <<<HTML
                             <div class="job-card" data-job-id="{$job_id}">

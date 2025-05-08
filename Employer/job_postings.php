@@ -150,7 +150,7 @@ $application = new JobApplication($db);
                   </div>
 
                   <div class="job-posting-actions">
-                    <button class="view-application-btn" onclick="window.location.href='applicants_list.php?job_id=<?php echo $jobId; ?>';">View</button>
+                    <button class="view-application-btn" onclick="window.location.href='applicants_list.php?job_id=<?php echo $jobId; ?>';">Applicants</button>
 
                     <button class="action-btn edit-btn" onclick="window.location.href='edit_job.php?job_id=<?php echo $jobId; ?>';"><i class="fas fa-edit"></i> Edit</button>
                     <button class="action-btn delete-btn" data-job-id="<?php echo $jobId; ?>">

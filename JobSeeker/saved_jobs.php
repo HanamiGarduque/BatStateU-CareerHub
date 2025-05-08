@@ -34,6 +34,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BatStateU Career Hub - Saved Jobs</title>
     <link rel="stylesheet" href="../Layouts/jobseeker.css">
+    <link rel="stylesheet" href="../Layouts/job_details.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -75,8 +76,6 @@ try {
             <!-- Header -->
             <header class="dashboard-header">
                 <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search saved jobs...">
                 </div>
                 <div class="user-menu">
                     <div class="notifications">
@@ -117,7 +116,7 @@ try {
 
                 <div class="saved-jobs-grid">
                     <?php foreach ($saved_jobs as $job): ?>
-                        <div class="saved-job-card" data-saved-id="<?php echo $job['saved_jobs_id']; ?>">
+                        <div class="saved-job-card" data-saved-id="<?php echo $job['saved_jobs_id']; ?>" data-job-id="<?php echo $job['job_id']; ?>">
                             <div class="saved-job-header">
                                 <div class="company-logo">
                                     <img src="../Layouts/work_icon.png" alt="Job Icon">
@@ -158,33 +157,199 @@ try {
                                         style="display: flex; justify-content: center; align-items: center; text-align: center; padding: 0.6rem 1rem; border-radius: 4px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background-color 0.3s;">
                                         Apply Now
                                     </a>
-                                    <button class="view-btn">View Details</button>
+                                    <button class="view-btn" data-job-id="<?php echo htmlspecialchars($job['job_id']); ?>">View Details</button>
+                                </div>
+                                
+                                <!-- Hidden job data for modal -->
+                                <div class="job-data" style="display: none;">
+                                    <div class="job-description"><?php echo isset($job['description']) ? htmlspecialchars($job['description']) : ''; ?></div>
+                                    <div class="job-responsibilities"><?php echo isset($job['responsibilities']) ? htmlspecialchars($job['responsibilities']) : ''; ?></div>
+                                    <div class="job-requirements"><?php echo isset($job['requirements']) ? htmlspecialchars($job['requirements']) : ''; ?></div>
+                                    <div class="job-benefits"><?php echo isset($job['benefits_perks']) ? htmlspecialchars($job['benefits_perks']) : ''; ?></div>
+                                    <div class="job-posted-date"><?php echo isset($job['date_posted']) ? htmlspecialchars($job['date_posted']) : ''; ?></div>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
-
-
             </div>
         </main>
     </div>
+    
+    <!-- Job Details Modal -->
+    <div class="modal-overlay" id="jobDetailsModal">
+        <div class="job-details-modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="modal-company-logo">
+                        <img src="../Layouts/work_icon.png" alt="Company Logo">
+                    </div>
+                    <div class="modal-job-title">
+                        <h2 id="modalJobTitle">Job Title</h2>
+                        <p class="modal-company-name" id="modalCompanyName">Company Name</p>
+                    </div>
+                </div>
+                <button class="modal-close" id="closeModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="job-overview">
+                    <div class="job-overview-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="modalLocation">Location</span>
+                    </div>
+                    <div class="job-overview-item">
+                        <i class="fas fa-briefcase"></i>
+                        <span id="modalJobType">Job Type</span>
+                    </div>
+                    <div class="job-overview-item">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span id="modalSalary">Salary Range</span>
+                    </div>
+                </div>
+                <div class="job-content">
+                    <div class="job-section">
+                        <h3 class="job-section-title">Job Description</h3>
+                        <div class="job-section-content" id="modalDescription">
+                            <!-- Job description will be inserted here -->
+                        </div>
+                    </div>
+                    <div class="job-section">
+                        <h3 class="job-section-title">Responsibilities</h3>
+                        <div class="job-section-content" id="modalResponsibilities">
+                            <!-- Responsibilities will be inserted here -->
+                        </div>
+                    </div>
+                    <div class="job-section">
+                        <h3 class="job-section-title">Requirements</h3>
+                        <div class="job-section-content" id="modalRequirements">
+                            <!-- Requirements will be inserted here -->
+                        </div>
+                    </div>
+                    <div class="job-section">
+                        <h3 class="job-section-title">Benefits & Perks</h3>
+                        <div class="job-section-content" id="modalBenefits">
+                            <!-- Benefits will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-actions">
+                    <a href="#" id="modalApplyBtn" class="modal-btn apply-modal-btn">
+                        <i class="fas fa-paper-plane"></i> Apply Now
+                    </a>
+                    <button id="modalCloseBtn" class="modal-btn save-modal-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Saved Jobs
+                    </button>
+                </div>
+                <div class="job-posted">
+                    Posted on <span id="modalPostedDate">Date</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Toggle view (grid/list)
         document.addEventListener('DOMContentLoaded', function() {
             const viewButtons = document.querySelectorAll('.view-btn');
             const savedJobsContainer = document.querySelector('.saved-jobs-grid');
-
+            const modal = document.getElementById('jobDetailsModal');
+            const closeModalBtn = document.getElementById('closeModal');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            
+            // View Details button functionality
             viewButtons.forEach(button => {
                 button.addEventListener('click', function() {
-                    viewButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-
-                    const view = this.getAttribute('data-view');
-                    savedJobsContainer.classList.toggle('list-view', view === 'list');
+                    const jobId = this.getAttribute('data-job-id');
+                    const jobCard = this.closest('.saved-job-card');
+                    
+                    // Get job data
+                    const title = jobCard.querySelector('.job-title').textContent;
+                    const company = jobCard.querySelector('.company-name').textContent;
+                    const location = jobCard.querySelector('.job-detail:nth-child(1)').textContent.trim();
+                    const jobType = jobCard.querySelector('.job-detail:nth-child(2)').textContent.trim();
+                    const salary = jobCard.querySelector('.job-detail:nth-child(3)').textContent.trim();
+                    
+                    // Get hidden data
+                    const jobData = jobCard.querySelector('.job-data');
+                    const description = jobData.querySelector('.job-description') ? 
+                        jobData.querySelector('.job-description').textContent : 'No description available.';
+                    const responsibilities = jobData.querySelector('.job-responsibilities') ? 
+                        jobData.querySelector('.job-responsibilities').textContent : 'No responsibilities listed.';
+                    const requirements = jobData.querySelector('.job-requirements') ? 
+                        jobData.querySelector('.job-requirements').textContent : 'No requirements listed.';
+                    const benefits = jobData.querySelector('.job-benefits') ? 
+                        jobData.querySelector('.job-benefits').textContent : 'No benefits listed.';
+                    const postedDate = jobData.querySelector('.job-posted-date') ? 
+                        jobData.querySelector('.job-posted-date').textContent : 'Unknown date';
+                    
+                    // Get job description from the server using AJAX
+                    fetch(`get_job_details.php?job_id=${jobId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Update modal content
+                            document.getElementById('modalJobTitle').textContent = title;
+                            document.getElementById('modalCompanyName').textContent = company;
+                            document.getElementById('modalLocation').textContent = location;
+                            document.getElementById('modalJobType').textContent = jobType;
+                            document.getElementById('modalSalary').textContent = salary;
+                            document.getElementById('modalDescription').innerHTML = formatContent(data.description || description);
+                            document.getElementById('modalResponsibilities').innerHTML = formatContent(data.responsibilities || responsibilities);
+                            document.getElementById('modalRequirements').innerHTML = formatContent(data.requirements || requirements);
+                            document.getElementById('modalBenefits').innerHTML = formatContent(data.benefits_perks || benefits);
+                            document.getElementById('modalPostedDate').textContent = formatDate(data.posted_date || postedDate);
+                            
+                            // Set apply button link
+                            document.getElementById('modalApplyBtn').href = `applying_job.php?job_id=${jobId}`;
+                            
+                            // Show modal
+                            modal.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+                        })
+                        .catch(error => {
+                            console.error('Error fetching job details:', error);
+                            
+                            // Fallback if AJAX fails - use data from the page
+                            document.getElementById('modalJobTitle').textContent = title;
+                            document.getElementById('modalCompanyName').textContent = company;
+                            document.getElementById('modalLocation').textContent = location;
+                            document.getElementById('modalJobType').textContent = jobType;
+                            document.getElementById('modalSalary').textContent = salary;
+                            document.getElementById('modalDescription').innerHTML = formatContent(description);
+                            document.getElementById('modalResponsibilities').innerHTML = formatContent(responsibilities);
+                            document.getElementById('modalRequirements').innerHTML = formatContent(requirements);
+                            document.getElementById('modalBenefits').innerHTML = formatContent(benefits);
+                            document.getElementById('modalPostedDate').textContent = formatDate(postedDate);
+                            
+                            // Set apply button link
+                            document.getElementById('modalApplyBtn').href = `applying_job.php?job_id=${jobId}`;
+                            
+                            // Show modal
+                            modal.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+                        });
                 });
             });
+
+            // Close modal functionality
+            closeModalBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            modalCloseBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+            
             // Handle removing a saved job using a remove button
             document.querySelectorAll('.remove-saved-job').forEach(button => {
                 button.addEventListener('click', function(e) {
@@ -211,8 +376,40 @@ try {
                 });
             });
 
-
-
+            // Helper function to format content with bullet points
+            function formatContent(content) {
+                if (!content) return '<p>No information provided.</p>';
+                
+                // Check if content already has HTML formatting
+                if (content.includes('<ul>') || content.includes('<li>')) {
+                    return content;
+                }
+                
+                // Split by new lines or bullet points
+                const lines = content.split(/\n|•/).filter(line => line.trim() !== '');
+                
+                // If there's only one line, return it as a paragraph
+                if (lines.length === 1) {
+                    return `<p>${lines[0]}</p>`;
+                }
+                
+                // Otherwise, format as a list
+                return `<ul>${lines.map(line => `<li>${line.trim()}</li>`).join('')}</ul>`;
+            }
+            
+            // Helper function to format date
+            function formatDate(dateString) {
+                if (!dateString) return 'Unknown date';
+                
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString;
+                
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
         });
     </script>
 </body>

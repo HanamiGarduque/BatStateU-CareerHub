@@ -132,18 +132,15 @@ if (!isJobseeker()) {
                     }
                 }
 
-                // Get job details
-                $stmt = $job->retrieveJobById($job_id);
-                if ($stmt && $stmt->rowCount() > 0) {
-                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                        $jobTitle = htmlspecialchars($row['title']) ?? 'Unknown Job Title';
-                        $companyName = htmlspecialchars($row['company_name']) ?? 'Unknown Company';
-                    }
-                    $stmt->closeCursor(); // Close the cursor to free up resources
+                $row = $job->retrieveJobById($job_id);
+
+                if ($row) {
+                    $jobTitle = htmlspecialchars($row['title']) ?? 'Unknown Job Title';
+                    $companyName = htmlspecialchars($row['company_name']) ?? 'Unknown Company';
                 } else {
                     echo "<p>Error retrieving job details.</p>";
                     exit();
-                }
+                }                
 
                 // Get user details
                 $stmt = $jobseeker->retrieveProfileById($user_id);

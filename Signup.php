@@ -58,7 +58,6 @@ $user = new Users($db);
     <div class="container">
         <div class="left-side">
              <div class="logo">
-                <img src="../Layouts/logo.png" alt="Profile Picture">
                 </div>
             <h2>Create Account</h2>
             <p>Join our community and start your journey</p>
