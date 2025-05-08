@@ -1,0 +1,487 @@
+/* Applicants List Styles */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.content-header h1 {
+    color: #333;
+    margin: 0;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.content-header h1 i {
+    color: #c41e3a;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    border: none;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    background-color: #c41e3a;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #a51a30;
+}
+
+.btn-secondary {
+    background-color: #f1f1f1;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+    background-color: #e0e0e0;
+}
+
+.btn-update {
+    background-color: #4a6cf7;
+    color: white;
+}
+
+.btn-update:hover {
+    background-color: #3a5ce5;
+}
+
+/* Applicants Container */
+.applicants-container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+/* Job Selector */
+.job-selector {
+    margin-bottom: 20px;
+}
+
+.job-select-form .form-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.job-select-form label {
+    font-weight: 500;
+    color: #333;
+    min-width: 100px;
+}
+
+.job-select-form select {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: #333;
+    max-width: 500px;
+}
+
+/* Job Details Card */
+.job-details-card {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid #c41e3a;
+}
+
+.job-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.job-details-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.4rem;
+}
+
+.job-status {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.job-status.active {
+    background-color: #e6f7e6;
+    color: #28a745;
+}
+
+.job-status.draft {
+    background-color: #f1f1f1;
+    color: #666;
+}
+
+.job-status.closed {
+    background-color: #f8d7da;
+    color: #dc3545;
+}
+
+.job-details-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.job-detail {
+    display: flex;
+    align-items: center;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.job-detail i {
+    margin-right: 5px;
+    color: #c41e3a;
+}
+
+/* Applicants Filter */
+.applicants-filter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.filter-options {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.filter-option {
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.filter-option:hover {
+    background-color: #f1f1f1;
+    color: #333;
+}
+
+.filter-option.active {
+    background-color: #c41e3a;
+    color: white;
+}
+
+.applicants-count {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Applicants List */
+.applicants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.applicant-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    border: 1px solid #eee;
+}
+
+.applicant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.applicant-profile {
+    display: flex;
+    gap: 15px;
+}
+
+.applicant-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.applicant-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.applicant-info h3 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.applicant-title {
+    margin: 0 0 5px 0;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.applicant-location {
+    margin: 0;
+    color: #888;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.applicant-location i {
+    color: #c41e3a;
+}
+
+.application-status {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.application-status.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.application-status.reviewing {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.application-status.shortlisted {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.application-status.interviewed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.application-status.offered {
+    background-color: #e0f3ff;
+    color: #0366d6;
+}
+
+.application-status.hired {
+    background-color: #e6f7e6;
+    color: #28a745;
+}
+
+.application-status.rejected {
+    background-color: #f8d7da;
+    color: #dc3545;
+}
+
+.applicant-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9rem;
+}
+
+.detail-label {
+    color: #666;
+    font-weight: 500;
+}
+
+.detail-label i {
+    color: #c41e3a;
+}
+
+.detail-value {
+    color: #333;
+}
+
+.cover-letter {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.cover-letter h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cover-letter h4 i {
+    color: #c41e3a;
+}
+
+.cover-letter-content {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.applicant-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.resume-action {
+    flex: 1;
+}
+
+.no-resume {
+    color: #888;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.status-action {
+    flex: 2;
+    display: flex;
+    gap: 10px;
+}
+
+.status-form {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.status-select {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+/* No Applicants / No Job Selected */
+.no-applicants,
+.no-job-selected {
+    text-align: center;
+    padding: 50px 20px;
+    color: #666;
+}
+
+.no-applicants i,
+.no-job-selected i {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+.no-applicants h3,
+.no-job-selected h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.no-applicants p,
+.no-job-selected p {
+    margin: 0;
+    color: #888;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .job-select-form .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .job-select-form select {
+        width: 100%;
+        max-width: none;
+    }
+    
+    .job-details-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .applicant-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .applicant-profile {
+        width: 100%;
+    }
+    
+    .applicant-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .status-action {
+        width: 100%;
+    }
+    
+    .status-form {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

@@ -130,7 +130,6 @@ class Users
 class Jobs
 {
     private $conn;
-    private $tbl_name = "jobs";
 
     public $job_id;
     public $user_id;
@@ -171,16 +170,21 @@ class Jobs
     }
     public function countAllJobs()
     {
-        $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM " . $this->tbl_name);
+        $stmt = $this->conn->prepare("CALL count_all_jobs(@total)");
         $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+
+        $result = $this->conn->query("SELECT @total AS total");
+        $row = $result->fetch(PDO::FETCH_ASSOC);
         return $row['total'];
     }
+
     public function countAllJobsPerEmp($emp_id)
     {
         $stmt = $this->conn->prepare("CALL get_job_count_per_employer(:employer_id)");
         $stmt->execute([':employer_id' => $emp_id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
         return $row['total'];
     }
     public function searchJobs($keyword = '')
@@ -189,7 +193,7 @@ class Jobs
         $stmt->bindValue(':keyword', $keyword);
         $stmt->execute();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $stmt->closeCursor(); // THIS is what solves the error
+        $stmt->closeCursor();
         return $results;
     }
 
@@ -197,8 +201,11 @@ class Jobs
     {
         $stmt = $this->conn->prepare("CALL get_job_by_ID(:job_id)");
         $stmt->execute([':job_id' => $job_id]);
-        return $stmt;
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
     }
+
     public function createJob($user_id) // done
     {
 
@@ -224,15 +231,16 @@ class Jobs
 
         return $stmt->execute();
     }
-    // try ko lang pero gumana idk
     public function getJobById($job_id)
     {
-        $query = "SELECT * FROM jobs WHERE job_id = :job_id"; // Assuming the correct column name is 'job_id'
-        $stmt = $this->conn->prepare($query);
+        $stmt = $this->conn->prepare("CALL get_job_by_id(:job_id)");
         $stmt->bindParam(':job_id', $job_id, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
     }
+
     public function updateJobById($job_id)
     {
         $stmt = $this->conn->prepare("CALL update_job(:job_id, :user_id, :title, :job_category, :company_name, :location, :type, :salary_min, :salary_max, :description, :responsibilities, :requirements, :benefits_perks)");
@@ -253,39 +261,10 @@ class Jobs
 
         return $stmt->execute();
     }
-
-
-    public function updateJob($job_id)
+    public function deleteJob($job_id)
     {
-        $query = "UPDATE jobs SET 
-                    title = :title, 
-                    job_category = :job_category, 
-                    company_name = :company_name, 
-                    location = :location, 
-                    type = :type, 
-                    salary_min = :salary_min, 
-                    salary_max = :salary_max, 
-                    description = :description, 
-                    responsibilities = :responsibilities, 
-                    requirements = :requirements, 
-                    benefits_perks = :benefits_perks 
-                  WHERE job_id = :job_id";
-
-        $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(':title', $this->title);
-        $stmt->bindParam(':job_category', $this->job_category);
-        $stmt->bindParam(':company_name', $this->company_name);
-        $stmt->bindParam(':location', $this->location);
-        $stmt->bindParam(':type', $this->type);
-        $stmt->bindParam(':salary_min', $this->salary_min);
-        $stmt->bindParam(':salary_max', $this->salary_max);
-        $stmt->bindParam(':description', $this->description);
-        $stmt->bindParam(':responsibilities', $this->responsibilities);
-        $stmt->bindParam(':requirements', $this->requirements);
-        $stmt->bindParam(':benefits_perks', $this->benefits_perks);
-        $stmt->bindParam(':job_id', $job_id);
-
+        $stmt = $this->conn->prepare("CALL delete_job(:job_id)");
+        $stmt->bindParam(':job_id', $job_id, PDO::PARAM_INT);
         return $stmt->execute();
     }
 }
@@ -301,28 +280,47 @@ class Bookmarks
 
     public function isBookmarked($user_id, $job_id)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM {$this->tbl_name} WHERE user_id = :user_id AND job_id = :job_id");
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->bindParam(':job_id', $job_id);
-        $stmt->execute();
-        return $stmt->rowCount() > 0;
+        $this->conn->prepare("CALL is_bookmarked(:user_id, :job_id, @is_marked)")
+            ->execute([':user_id' => $user_id, ':job_id' => $job_id]);
+
+        $stmt = $this->conn->query("SELECT @is_marked AS is_marked");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (bool)$result['is_marked'];
     }
 
-    public function add($user_id, $job_id)
+    public function addBookmark($user_id, $job_id)
     {
-        $stmt = $this->conn->prepare("INSERT INTO {$this->tbl_name} (user_id, job_id) VALUES (?, ?)");
-        return $stmt->execute([$user_id, $job_id]);
+        $stmt = $this->conn->prepare("CALL add_bookmark(:user_id, :job_id)");
+        return $stmt->execute([
+            ':user_id' => $user_id,
+            ':job_id' => $job_id
+        ]);
     }
-
     public function removeByUser($user_id, $job_id)
     {
-        $stmt = $this->conn->prepare("DELETE FROM {$this->tbl_name} WHERE user_id = ? AND job_id = ?");
-        return $stmt->execute([$user_id, $job_id]);
+        $stmt = $this->conn->prepare("CALL delete_bookmark_by_user(:user_id, :job_id)");
+        return $stmt->execute([
+            ':user_id' => $user_id,
+            ':job_id' => $job_id
+        ]);
     }
+
     public function removeBySavedJob($user_id, $saved_jobs_id)
     {
-        $stmt = $this->conn->prepare("DELETE FROM {$this->tbl_name} WHERE user_id = ? AND saved_jobs_id = ?");
-        return $stmt->execute([$user_id, $saved_jobs_id]);
+        $stmt = $this->conn->prepare("CALL delete_bookmark_by_saved_job(:user_id, :saved_jobs_id)");
+        return $stmt->execute([
+            ':user_id' => $user_id,
+            ':saved_jobs_id' => $saved_jobs_id
+        ]);
+    }
+
+    public function retrieveBookmarks($user_id)
+    {
+        $stmt = $this->conn->prepare("CALL get_saved_jobs_by_user_id(:user_id)");
+        $stmt->execute([':user_id' => $user_id]);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $results;
     }
 }
 class Employers
@@ -392,20 +390,31 @@ class JobApplication
     }
     public function hasAlreadyApplied($job_id, $user_id)
     {
-        $query = "SELECT COUNT(*) as total FROM applications WHERE job_id = :job_id AND user_id = :user_id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':job_id', $job_id);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row['total'] > 0;
+        $this->conn->prepare("CALL has_already_applied(:job_id, :user_id, @already_applied)")
+            ->execute([
+                ':job_id' => $job_id,
+                ':user_id' => $user_id
+            ]);
+
+        $result = $this->conn->query("SELECT @already_applied AS already_applied");
+        $row = $result->fetch(PDO::FETCH_ASSOC);
+        return (bool)$row['already_applied'];
     }
-    public function retrieveApplications($user_id)
+
+    public function retrieveApplicationsByEmpID($user_id)
     {
-        $stmt = $this->conn->prepare("CALL get_jobseeker_applications(:user_id)");
+        $stmt = $this->conn->prepare("CALL get_jobseeker_applications_by_emp_id(:user_id)");
         $stmt->execute([':user_id' => $user_id]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);  // Fetch all rows
-        $stmt->closeCursor(); // Very important!
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
+    }
+    public function retrieveApplicationsByJobID($user_id)
+    {
+        $stmt = $this->conn->prepare("CALL get_jobseeker_applications_by_job_id(:user_id)");
+        $stmt->execute([':user_id' => $user_id]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
         return $result;
     }
 
@@ -436,22 +445,29 @@ class JobApplication
     }
     public function getApplicationById($application_id)
     {
-        $query = "SELECT status FROM applications WHERE id = :application_id LIMIT 1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':application_id', $application_id);
-        $stmt->execute();
+        $stmt = $this->conn->prepare("CALL get_application_status_by_id(:application_id)");
+        $stmt->execute([':application_id' => $application_id]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function retrieveNoOfApplications($status, $job_id)
+    public function retrieveNoOfApplications($job_id)
     {
-        $stmt = $this->conn->prepare("CALL get_no_of_applications(:status, :job_id)");
+        $stmt = $this->conn->prepare("CALL get_no_of_applications(:job_id)");
+        $stmt->bindParam(':job_id', $job_id);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result;
+    }
+    public function retrieveNoOfApplicationsPerStatus($status, $job_id)
+    {
+        $stmt = $this->conn->prepare("CALL get_no_of_applications_per_status(:status, :job_id)");
         $stmt->bindParam(':status', $status);
         $stmt->bindParam(':job_id', $job_id);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stmt->closeCursor(); // Very important!
+        $stmt->closeCursor();
         return $result;
     }
 
@@ -461,10 +477,19 @@ class JobApplication
         $stmt->bindParam(':emp_id', $emp_id);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stmt->closeCursor(); // Very important!
+        $stmt->closeCursor();
         return $result['total'] ?? 0;
     }
-    public function retrieveRecentApplications($user_id) // done
+    public function getTotalPositionsFilled($emp_id)
+    {
+        $stmt = $this->conn->prepare("CALL get_total_positions_filled(:emp_id)");
+        $stmt->bindParam(':emp_id', $emp_id);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $result['total'] ?? 0;
+    }
+    public function retrieveRecentApplications($user_id)
     {
         $stmt = $this->conn->prepare("CALL get_recent_applications(:user_id)");
         $stmt->execute([':user_id' => $user_id]);
@@ -477,8 +502,8 @@ class JobApplication
     {
         $stmt = $this->conn->prepare("CALL get_applications(:user_id)");
         $stmt->execute([':user_id' => $user_id]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);  // Fetch all rows
-        $stmt->closeCursor(); // Very important!
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
         return $result;
     }
 }
@@ -541,13 +566,13 @@ class Experiences
     {
         $this->conn = $db;
     }
-    public function retrieveExperiences($user_id) // done 
+    public function retrieveExperiences($user_id)
     {
         $stmt = $this->conn->prepare("CALL get_jobseeker_experience(:user_id)");
         $stmt->execute([':user_id' => $user_id]);
         return $stmt;
     }
-    public function addExperiences($user_id, $job_title, $company_name, $start_date, $end_date, $description) // done
+    public function addExperiences($user_id, $job_title, $company_name, $start_date, $end_date, $description)
     {
         $stmt = $this->conn->prepare("CALL insert_jobseeker_experience(:user_id, :job_title, :company_name, :start_date, :end_date, :description)");
         $stmt->bindParam(':user_id', $user_id);
@@ -558,7 +583,7 @@ class Experiences
         $stmt->bindParam(':description', $description);
         return $stmt->execute();
     }
-    public function deleteExperience($id, $user_id) // done
+    public function deleteExperience($id, $user_id)
     {
         $stmt = $this->conn->prepare("CALL delete_jobseeker_experience(:id, :user_id)");
         $stmt->bindParam(':id', $id);
@@ -582,7 +607,7 @@ class Resumes
         $this->conn = $db;
     }
 
-    public function uploadResume($userId, $filename, $target_path, $extension) // done
+    public function uploadResume($userId, $filename, $target_path, $extension)
     {
 
         $stmt = $this->conn->prepare("CALL upload_jobseeker_resume(:user_id, :file_name, :file_path, :file_extension)");
@@ -597,7 +622,7 @@ class Resumes
             return false;
         }
     }
-    public function deleteResume($userId) // done
+    public function deleteResume($userId)
     {
 
         $stmt = $this->conn->prepare("CALL delete_jobseeker_resume(:user_id)");
@@ -674,11 +699,10 @@ class StatusLog
 
     public function retrieveStatusLog($application_id)
     {
-        $query = "SELECT status, timestamp FROM status_log WHERE application_id = :application_id ORDER BY timestamp ASC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":application_id", $application_id);
-        $stmt->execute();
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC); // fetchAll instead of get_result()
+        $stmt = $this->conn->prepare("CALL get_status_log_by_application(:application_id)");
+        $stmt->execute([':application_id' => $application_id]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
         return $result;
     }
 }

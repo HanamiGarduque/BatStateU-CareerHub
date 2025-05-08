@@ -4,7 +4,7 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isJobseeker()) {
-    header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
+    header('Location: /ADMSSYSTEM/logout.php');
     exit();
 }
 
@@ -12,6 +12,7 @@ $database = new Database();
 $db = $database->getConnect();
 
 $application = new JobApplication($db);
+$jobs = new Jobs($db); 
 
 ?>
 <!DOCTYPE html>
@@ -65,8 +66,6 @@ $application = new JobApplication($db);
             <!-- Header -->
             <header class="dashboard-header">
                 <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search applications...">
                 </div>
                 <div class="user-menu">
                     <div class="notifications">
@@ -115,14 +114,15 @@ $application = new JobApplication($db);
                     if ($num > 0) {
                         foreach ($results as $row) {
                             $application_id = $row['id'];
+                            $job_id = $row['job_id'];
+
+                            // Get full job details for the modal
+                            $jobDetails = $jobs->retrieveJobById($job_id);
+                            $jobData = $jobDetails->fetch(PDO::FETCH_ASSOC);
 
                             echo <<<HTML
-                            <div class="job-card" data-job-id="
+                            <div class="job-card" data-job-id="{$job_id}">
                             HTML;
-                            echo htmlspecialchars($row['job_id']);
-                            echo <<<HTML
-                                                            ">
-                                HTML;
                     ?>
                             <div class="application-item">
                                 <div class="application-main">
@@ -264,19 +264,32 @@ $application = new JobApplication($db);
                                     ?>
 
                                     <div class="application-actions">
-                                        <button class="view-job-btn" data-job-id="<?php echo htmlspecialchars($row['job_id']); ?>"><i class="fas fa-external-link-alt"></i>View Job</button>
+                                        <button class="view-job-btn" data-job-id="<?php echo htmlspecialchars($row['job_id']); ?>">
+                                            <i class="fas fa-external-link-alt"></i> View Job
+                                        </button>
                                     </div>
+
+                                    <!-- Hidden job data for modal -->
                                     <div class="job-data" style="display: none;">
-                                        <div class="job-responsibilities"><?php echo htmlspecialchars($row['responsibilities']); ?></div>
-                                        <div class="job-requirements"><?php echo htmlspecialchars($row['requirements']); ?></div>
-                                        <div class="job-benefits"><?php echo htmlspecialchars($row['benefits_perks']); ?></div>
-                                        <div class="job-posted-date"><?php echo htmlspecialchars($row['date_posted']); ?></div>
-                                        
-                                    </div>  
+                                        <div class="salary_range">
+                                            <?php
+                                            if (isset($jobData['salary_min']) && isset($jobData['salary_max'])) {
+                                                echo htmlspecialchars($jobData['salary_min']) . ' - ' . htmlspecialchars($jobData['salary_max']);
+                                            } elseif (isset($jobData['salary_min'])) {
+                                                echo htmlspecialchars($jobData['salary_min']);
+                                            } elseif (isset($jobData['salary_max'])) {
+                                                echo htmlspecialchars($jobData['salary_max']);
+                                            }
+                                            ?>
+                                        </div>
+                                        <div class="job-responsibilities"><?php echo isset($jobData['responsibilities']) ? htmlspecialchars($jobData['responsibilities']) : ''; ?></div>
+                                        <div class="job-requirements"><?php echo isset($jobData['requirements']) ? htmlspecialchars($jobData['requirements']) : ''; ?></div>
+                                        <div class="job-benefits"><?php echo isset($jobData['benefits_perks']) ? htmlspecialchars($jobData['benefits_perks']) : ''; ?></div>
+                                        <div class="job-posted-date"><?php echo isset($jobData['date_posted']) ? htmlspecialchars($jobData['date_posted']) : ''; ?></div>
+                                    </div>
                                 </div>
                             </div>
                     <?php
-                    echo $row['job_id'];
                             echo '</div>';
                         }
                     } else {
@@ -284,11 +297,10 @@ $application = new JobApplication($db);
                     }
                     ?>
                 </div>
-
-
             </div>
         </main>
     </div>
+
     <!-- Job Details Modal -->
     <div class="modal-overlay" id="jobDetailsModal">
         <div class="job-details-modal">
@@ -323,32 +335,36 @@ $application = new JobApplication($db);
                     <div class="job-section">
                         <h3 class="job-section-title">Job Description</h3>
                         <div class="job-section-content" id="modalDescription">
+                            <!-- Job description will be inserted here -->
                         </div>
                     </div>
                     <div class="job-section">
                         <h3 class="job-section-title">Responsibilities</h3>
                         <div class="job-section-content" id="modalResponsibilities">
+                            <!-- Responsibilities will be inserted here -->
                         </div>
                     </div>
                     <div class="job-section">
                         <h3 class="job-section-title">Requirements</h3>
                         <div class="job-section-content" id="modalRequirements">
+                            <!-- Requirements will be inserted here -->
                         </div>
                     </div>
                     <div class="job-section">
                         <h3 class="job-section-title">Benefits & Perks</h3>
                         <div class="job-section-content" id="modalBenefits">
+                            <!-- Benefits will be inserted here -->
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <div class="modal-actions">
-                    <a href="#" id="modalApplyBtn" class="modal-btn apply-modal-btn">
+                    <a href="#" id="modalApplyBtn" class="modal-btn apply-modal-btn" style="display: none;">
                         <i class="fas fa-paper-plane"></i> Apply Now
                     </a>
-                    <button id="modalSaveBtn" class="modal-btn save-modal-btn">
-                        <i class="fas fa-bookmark"></i> Save Job
+                    <button id="modalCloseBtn" class="modal-btn save-modal-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Applications
                     </button>
                 </div>
                 <div class="job-posted">
@@ -359,14 +375,12 @@ $application = new JobApplication($db);
     </div>
 
     <script>
-        // Improved modal functionality
         document.addEventListener('DOMContentLoaded', function() {
             const toggleButtons = document.querySelectorAll('.toggle-details-btn');
+            const viewJobButtons = document.querySelectorAll('.view-job-btn');
             const modal = document.getElementById('jobDetailsModal');
             const closeModalBtn = document.getElementById('closeModal');
-            const viewJobButtons = document.querySelectorAll('.view-job-btn'); // Changed from .view-btn to .view-job-btn
-            const modalApplyBtn = document.getElementById('modalApplyBtn');
-            const modalSaveBtn = document.getElementById('modalSaveBtn');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
 
             // Toggle application details
             toggleButtons.forEach(button => {
@@ -401,8 +415,79 @@ $application = new JobApplication($db);
                 });
             });
 
-            // Modal functionality
+            // View Job button functionality
+            viewJobButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const jobId = this.getAttribute('data-job-id');
+                    const jobCard = document.querySelector(`.job-card[data-job-id="${jobId}"]`);
+
+                    // Get job data
+                    const title = jobCard.querySelector('.job-title').textContent;
+                    const company = jobCard.querySelector('.company-name').textContent;
+                    const location = jobCard.querySelector('.meta-item:nth-child(2)').textContent.replace('Location: ', '').trim();
+                    const jobType = jobCard.querySelector('.meta-item:nth-child(3)').textContent.replace('Job Type: ', '').trim();
+
+                    // Get hidden data
+                    const salary_range = jobCard.querySelector('.salary_range') ?
+                        jobCard.querySelector('.salary_range').textContent : 'No responsibilities listed.';
+                    const responsibilities = jobCard.querySelector('.job-responsibilities') ?
+                        jobCard.querySelector('.job-responsibilities').textContent : 'No responsibilities listed.';
+                    const requirements = jobCard.querySelector('.job-requirements') ?
+                        jobCard.querySelector('.job-requirements').textContent : 'No requirements listed.';
+                    const benefits = jobCard.querySelector('.job-benefits') ?
+                        jobCard.querySelector('.job-benefits').textContent : 'No benefits listed.';
+                    const postedDate = jobCard.querySelector('.job-posted-date') ?
+                        jobCard.querySelector('.job-posted-date').textContent : 'Unknown date';
+
+                    // Get job description from the server using AJAX
+                    fetch(`get_job_details.php?job_id=${jobId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Update modal content
+                            document.getElementById('modalJobTitle').textContent = title;
+                            document.getElementById('modalCompanyName').textContent = company;
+                            document.getElementById('modalLocation').textContent = location;
+                            document.getElementById('modalJobType').textContent = jobType;
+                            document.getElementById('modalSalary').innerHTML = formatContent(salary_range || 'Salary not specified');
+                            document.getElementById('modalDescription').innerHTML = formatContent(data.description || 'No description available.');
+                            document.getElementById('modalResponsibilities').innerHTML = formatContent(responsibilities);
+                            document.getElementById('modalRequirements').innerHTML = formatContent(requirements);
+                            document.getElementById('modalBenefits').innerHTML = formatContent(benefits);
+                            document.getElementById('modalPostedDate').textContent = formatDate(postedDate);
+
+                            // Show modal
+                            modal.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+                        })
+                        .catch(error => {
+                            console.error('Error fetching job details:', error);
+
+                            // Fallback if AJAX fails - use data from the page
+                            document.getElementById('modalJobTitle').textContent = title;
+                            document.getElementById('modalCompanyName').textContent = company;
+                            document.getElementById('modalLocation').textContent = location;
+                            document.getElementById('modalJobType').textContent = jobType;
+                            document.getElementById('modalSalary').textContent = 'Salary information unavailable';
+                            document.getElementById('modalDescription').innerHTML = '<p>Job description unavailable.</p>';
+                            document.getElementById('modalResponsibilities').innerHTML = formatContent(responsibilities);
+                            document.getElementById('modalRequirements').innerHTML = formatContent(requirements);
+                            document.getElementById('modalBenefits').innerHTML = formatContent(benefits);
+                            document.getElementById('modalPostedDate').textContent = formatDate(postedDate);
+
+                            // Show modal
+                            modal.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+                        });
+                });
+            });
+
+            // Close modal functionality
             closeModalBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            modalCloseBtn.addEventListener('click', function() {
                 modal.classList.remove('active');
                 document.body.style.overflow = '';
             });
@@ -413,104 +498,6 @@ $application = new JobApplication($db);
                     modal.classList.remove('active');
                     document.body.style.overflow = '';
                 }
-            });
-
-            // View Job button functionality
-            viewJobButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const jobId = this.getAttribute('data-job-id');
-                    console.log('View job clicked:', jobId);
-
-                    // Fetch job details using AJAX
-                    fetchJobDetails(jobId);
-
-                    // Show modal
-                    modal.classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                });
-            });
-
-            // Function to fetch job details
-            function fetchJobDetails(jobId) {
-                // You'll need to create this PHP endpoint
-                fetch(`get_job_details.php?job_id=${jobId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Update modal with job details
-                        document.getElementById('modalJobTitle').textContent = data.job_title;
-                        document.getElementById('modalCompanyName').textContent = data.company_name;
-                        document.getElementById('modalLocation').textContent = data.location;
-                        document.getElementById('modalJobType').textContent = data.type;
-                        document.getElementById('modalSalary').textContent = formatContent(data.salary) || 'Not disclosed';
-                        document.getElementById('modalDescription').innerHTML = formatContent(data.description);
-                        document.getElementById('modalResponsibilities').innerHTML = formatContent(data.responsibilities);
-                        document.getElementById('modalRequirements').innerHTML = formatContent(data.requirements);
-                        document.getElementById('modalBenefits').innerHTML = formatContent(data.benefits);
-                        document.getElementById('modalPostedDate').textContent = formatDate(data.date_posted);
-
-                        // Update apply button
-                        modalApplyBtn.href = `applying_job.php?job_id=${jobId}`;
-
-                        // Check if job is saved
-                        checkIfJobSaved(jobId);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching job details:', error);
-                        // Simple fallback for error
-                        document.getElementById('modalJobTitle').textContent = 'Error loading job details';
-                        document.getElementById('modalDescription').innerHTML = '<p>There was an error loading the job details. Please try again later.</p>';
-                    });
-            }
-
-            // Function to check if job is saved
-            function checkIfJobSaved(jobId) {
-                // You'll need to implement this endpoint
-                fetch(`check_saved_job.php?job_id=${jobId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        modalSaveBtn.classList.toggle('saved', data.is_saved);
-                        modalSaveBtn.dataset.jobId = jobId;
-                    })
-                    .catch(error => {
-                        console.error('Error checking saved status:', error);
-                    });
-            }
-
-            // Modal Save button functionality
-            modalSaveBtn.addEventListener('click', function() {
-                const jobId = this.dataset.jobId;
-                const isSaved = this.classList.contains('saved');
-
-                // Toggle saved status
-                fetch(`save_job.php?job_id=${jobId}&action=${isSaved ? 'unsave' : 'save'}`, {
-                        method: 'POST'
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            this.classList.toggle('saved');
-                            // Update icon and text if needed
-                            this.innerHTML = this.classList.contains('saved') ?
-                                '<i class="fas fa-bookmark"></i> Saved' :
-                                '<i class="far fa-bookmark"></i> Save Job';
-
-                            // Show success message
-                            Swal.fire({
-                                icon: 'success',
-                                title: data.message,
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error saving job:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'There was an error saving this job. Please try again.'
-                        });
-                    });
             });
 
             // Helper function to format content with bullet points

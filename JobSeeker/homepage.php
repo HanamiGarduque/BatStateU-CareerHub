@@ -4,16 +4,16 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isJobseeker()) {
-    header('Location: ../login.php'); // Or wherever you want
+    header('Location: ../login.php');
     exit();
 }
 
 $database = new Database();
 $db = $database->getConnect();
 $jobs = new Jobs($db);
-$user_id = $_SESSION['id'] ?? null; // Get the user ID from the session
+$user_id = $_SESSION['id'] ?? null;
 
-// Get the search keyword from the request
+// get the search keyword from the request
 $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
 
 

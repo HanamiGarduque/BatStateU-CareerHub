@@ -4,7 +4,7 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isJobseeker()) {
-    header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
+    header('Location: /ADMSSYSTEM/logout.php');
     exit();
 }
 $database = new Database();
@@ -13,16 +13,10 @@ $db = $database->getConnect();
 $jobseeker = new Users($db);
 $user_id = $_SESSION['id'];
 
-// Get the statement from the method
 $stmt = $jobseeker->retrieveProfileById($user_id);
 $userData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$userData) {
-    // User not found, log out
-    session_destroy();
-    header("Location: login.php?error=invalid_user");
-    exit();
-}
+
 $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
 
 ?>
@@ -197,7 +191,7 @@ $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'personal';
                                     $experience = new Experiences($db);
                                     $stmt = $experience->retrieveExperiences($user_id);
                                     $experiences = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                    $stmt->closeCursor(); // Close the cursor to free up the connection 
+                                    $stmt->closeCursor();
 
                                     if ($experiences) {
                                         foreach ($experiences as $experience) {

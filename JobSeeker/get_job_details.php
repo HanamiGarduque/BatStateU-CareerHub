@@ -4,7 +4,7 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isJobseeker()) {
-    header('Location: ../login.php'); // Or wherever you want
+    header('Location: ../login.php');
     exit();
 }
 
@@ -14,7 +14,8 @@ $db = $database->getConnect();
 $job = new Jobs($db);
 
 if (isset($_GET['job_id'])) {
-    $jobId = ($_GET['job_id']); // Sanitize input
+    $jobId = ($_GET['job_id']); 
+    
     error_log("Job ID: " . $jobId);
     
     $jobDetails = $job->getJobById($jobId);

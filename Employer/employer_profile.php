@@ -57,8 +57,6 @@ if (!isEmployer()) {
       <!-- Header -->
       <header class="dashboard-header">
         <div class="search-container">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Search...">
         </div>
         <div class="user-menu">
           <div class="notifications">

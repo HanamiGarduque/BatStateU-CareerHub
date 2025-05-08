@@ -15,12 +15,10 @@ $resume = new Resumes($db);
 $userId = $_SESSION['id'];
 $userResumeDir = "resumes/user_" . $userId;
 
-// Create directory if it doesn't exist
 if (!file_exists($userResumeDir) && !is_dir($userResumeDir)) {
     mkdir($userResumeDir, 0755, true);
 }
 
-// Handle resume upload
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 

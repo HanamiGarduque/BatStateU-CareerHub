@@ -4,7 +4,7 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isEmployer()) {
-  header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
+  header('Location: /ADMSSYSTEM/logout.php');
   exit();
 }
 
@@ -91,8 +91,8 @@ $employer = new Employers($db);
             <button class="filter-tab" data-filter="under review">Under Review</button>
             <button class="filter-tab" data-filter="shortlisted">Shortlisted</button>
             <button class="filter-tab" data-filter="interview">Interview</button>
-            <button class="filter-tab" data-filter="Accepted">Accepted</button>
-            <button class="filter-tab" data-filter="rejected">Rejected</button>
+            <button class="filter-tab" data-filter="accepted">Accepted</button>
+            <button class="filter-tab" data-filter="Rejected">Rejected</button>
           </div>
         </div>
 
@@ -100,7 +100,7 @@ $employer = new Employers($db);
         <div class="applications-list">
           <?php
           $emp_id = $_SESSION['id'];
-          $results = $application->retrieveApplications($emp_id);
+          $results = $application->retrieveApplicationsByEmpID($emp_id);
           $num = count($results);
 
           if ($num > 0) {
@@ -225,7 +225,7 @@ $employer = new Employers($db);
                       <h4>Cover Letter</h4>
                       <div class="cover-letter-content">
                         <?php
-                        // Check if cover letter exists
+                        // check if cover letter exists
                         if (!empty($row['cover_letter'])) {
                           echo nl2br(htmlspecialchars($row['cover_letter']));
                         } else {
@@ -260,7 +260,7 @@ $employer = new Employers($db);
                     echo '<div class="timeline">';
 
                     $addedStatuses = array_column($statuses, 'status');
-                    $isUnderReviewChecked = !in_array('Under Review', $addedStatuses); // Check if "Under Review" is missing
+                    $isUnderReviewChecked = !in_array('Under Review', $addedStatuses); // check if status is under review
 
                     foreach ($allSteps as $step) {
                       if ($step == 'Under Review' && $isUnderReviewChecked) {
@@ -359,7 +359,7 @@ $employer = new Employers($db);
 
 
                     <div class="candidate-actions">
-                       <form action="update_status.php" method="POST" class="interview-form" style="display: inline;">
+                      <form action="update_status.php" method="POST" class="interview-form" style="display: inline;">
                         <input type="hidden" name="application_id" value="<?php echo $application_id; ?>">
                         <input type="hidden" name="status" value="Interview">
                         <button type="submit" class="candidate-action-btn">
@@ -392,57 +392,49 @@ $employer = new Employers($db);
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Filter tabs functionality
-      const filterTabs = document.querySelectorAll('.filter-tab');
-      const applicationItems = document.querySelectorAll('.application-item');
+    document.addEventListener("DOMContentLoaded", function () {
+    const tabs = document.querySelectorAll(".filter-tab");
+    const applications = document.querySelectorAll(".application-item");
 
-      filterTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-          // Remove active class from all tabs
-          filterTabs.forEach(t => t.classList.remove('active'));
+    tabs.forEach(tab => {
+      tab.addEventListener("click", function () {
+        // Remove active class from all tabs
+        tabs.forEach(t => t.classList.remove("active"));
+        this.classList.add("active");
 
-          // Add active class to clicked tab
-          this.classList.add('active');
+        const filter = this.dataset.filter.toLowerCase();
 
-          // Get filter value
-          const filter = this.getAttribute('data-filter');
+        applications.forEach(app => {
+          const statusElement = app.querySelector(".application-status-badge");
+          const status = statusElement ? statusElement.textContent.trim().toLowerCase() : "";
 
-          // Show/hide application items based on filter
-          applicationItems.forEach(item => {
-            if (filter === 'all') {
-              item.style.display = 'block';
-            } else {
-              const statusBadge = item.querySelector('.application-status-badge');
-              if (statusBadge && statusBadge.classList.contains(filter)) {
-                item.style.display = 'block';
-              } else {
-                item.style.display = 'none';
-              }
-            }
-          });
-        });
-      });
-
-
-      // Toggle application details
-      const toggleButtons = document.querySelectorAll('.toggle-details-btn');
-
-      toggleButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          const applicationItem = this.closest('.application-item');
-          const detailsSection = applicationItem.querySelector('.application-details-expanded');
-
-          if (detailsSection.style.display === 'block') {
-            detailsSection.style.display = 'none';
-            this.innerHTML = '<i class="fas fa-chevron-down"></i>';
+          if (filter === "all" || status === filter) {
+            app.style.display = "block";
           } else {
-            detailsSection.style.display = 'block';
-            this.innerHTML = '<i class="fas fa-chevron-up"></i>';
+            app.style.display = "none";
           }
         });
       });
     });
+  });
+    // Toggle application details
+    const toggleButtons = document.querySelectorAll('.toggle-details-btn');
+
+    toggleButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const applicationItem = this.closest('.application-item');
+      const detailsSection = applicationItem.querySelector('.application-details-expanded');
+
+      if (detailsSection.style.display === 'block') {
+        detailsSection.style.display = 'none';
+        this.innerHTML = '<i class="fas fa-chevron-down"></i>';
+      } else {
+        detailsSection.style.display = 'block';
+        this.innerHTML = '<i class="fas fa-chevron-up"></i>';
+      }
+    });
+    });
+  
   </script>
   <?php
   if (isset($_SESSION['status_success'])) {

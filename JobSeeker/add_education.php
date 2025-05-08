@@ -17,7 +17,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $degree = $_POST['degree'];
         $institution = $_POST['institution'];
-        $start_date = $_POST['start_year']; // renamed to match your table
+        $start_date = $_POST['start_year']; 
         $end_date = $_POST['end_year'];
         $description = $_POST['description'];
         

@@ -30,9 +30,9 @@ $application = new JobApplication($db);
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="logo-container">
-         <div class="logo">
-                <img src="../Layouts/logo.png" alt="Profile Picture">
-                </div>
+        <div class="logo">
+          <img src="../Layouts/logo.png" alt="Profile Picture">
+        </div>
         <h3>Career Hub</h3>
       </div>
 
@@ -51,7 +51,7 @@ $application = new JobApplication($db);
             <a href="applications_management.php"><i class="fas fa-file-alt"></i> Applications</a>
           </li>
           <li>
-          
+
           <li class="logout">
             <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
           </li>
@@ -64,8 +64,6 @@ $application = new JobApplication($db);
       <!-- Header -->
       <header class="dashboard-header">
         <div class="search-container">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Search job postings...">
         </div>
         <div class="user-menu">
           <div class="notifications">
@@ -73,7 +71,7 @@ $application = new JobApplication($db);
             <span class="notification-badge">5</span>
           </div>
           <div class="user-profile">
-          <img src="../Layouts/emp_icon.png" alt="Profile Picture">
+            <img src="../Layouts/emp_icon.png" alt="Profile Picture">
             <span>Welcome, <?php echo isset($_SESSION['name']) ? $_SESSION['name'] : 'Admin'; ?></span>
           </div>
         </div>
@@ -112,10 +110,9 @@ $application = new JobApplication($db);
             foreach ($results as $row) {
               $jobId = $row['job_id'];
 
-              // Call the procedure only once for each status
-              $submittedData = $application->retrieveNoOfApplications('submitted', $jobId);
-              $interviewData = $application->retrieveNoOfApplications('interview', $jobId);
-              $shortlistedData = $application->retrieveNoOfApplications('shortlisted', $jobId);
+              $submittedData = $application->retrieveNoOfApplications($jobId);
+              $interviewData = $application->retrieveNoOfApplicationsPerStatus('Interview', $jobId);
+              $shortlistedData = $application->retrieveNoOfApplicationsPerStatus('Shortlisted', $jobId);
 
               $applicationCount = $submittedData['application_count'] ?? 0;
               $interviewCount = $interviewData['application_count'] ?? 0;
@@ -145,7 +142,7 @@ $application = new JobApplication($db);
                     <div class="job-stat">
                       <span class="stat-value"><?php echo $interviewCount; ?></span>
                       <span class="stat-label">Interviews</span>
-                    </div>  
+                    </div>
                     <div class="job-stat">
                       <span class="stat-value"><?php echo $shortlistedCount; ?></span>
                       <span class="stat-label">Shortlisted</span>
@@ -153,15 +150,19 @@ $application = new JobApplication($db);
                   </div>
 
                   <div class="job-posting-actions">
-                    <button class="action-btn view-btn"><i class="fas fa-eye"></i> View</button>
+                    <button class="view-application-btn" onclick="window.location.href='applicants_list.php?job_id=<?php echo $jobId; ?>';">View</button>
+
                     <button class="action-btn edit-btn" onclick="window.location.href='edit_job.php?job_id=<?php echo $jobId; ?>';"><i class="fas fa-edit"></i> Edit</button>
-                    <button class="action-btn delete-btn"><i class="fas fa-trash"></i> Delete</button>
+                    <button class="action-btn delete-btn" data-job-id="<?php echo $jobId; ?>">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+
                   </div>
                 </div>
               </div>
           <?php
             }
-          } else { 
+          } else {
             echo "<p>No applications found.</p>";
           }
           ?>
@@ -207,18 +208,20 @@ $application = new JobApplication($db);
           }
         });
 
-        // Clear and re-append sorted items
         jobList.innerHTML = '';
         sorted.forEach(item => jobList.appendChild(item));
       });
     });
 
 
-    // Delete job confirmation
     const deleteButtons = document.querySelectorAll('.delete-btn');
 
     deleteButtons.forEach(button => {
-      button.addEventListener('click', function() {
+      button.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent any default action
+
+        const jobId = this.getAttribute('data-job-id');
+
         Swal.fire({
           title: 'Delete Job Posting',
           text: 'Are you sure you want to delete this job posting? This action cannot be undone.',
@@ -229,11 +232,16 @@ $application = new JobApplication($db);
           confirmButtonText: 'Yes, delete it'
         }).then((result) => {
           if (result.isConfirmed) {
-            Swal.fire(
-              'Deleted!',
-              'The job posting has been deleted.',
-              'success'
-            );
+            // Optional: show deleted alert, then redirect after delay
+            Swal.fire({
+              title: 'Deleted!',
+              text: 'The job posting has been deleted.',
+              icon: 'success',
+              timer: 1500,
+              showConfirmButton: false
+            }).then(() => {
+              window.location.href = `delete_job.php?job_id=${jobId}`;
+            });
           }
         });
       });

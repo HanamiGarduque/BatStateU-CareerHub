@@ -4,7 +4,7 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isJobseeker()) {
-    header('Location: ../login.php'); // Or wherever you want
+    header('Location: ../login.php');
     exit();
 }
 ?>

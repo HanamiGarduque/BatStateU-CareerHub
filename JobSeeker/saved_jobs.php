@@ -5,37 +5,25 @@ require_once '../Database/db_connections.php';
 
 
 if (!isJobseeker()) {
-    header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
+    header('Location: /ADMSSYSTEM/logout.php');
     exit();
 }
 
 
 $database = new Database();
 $conn = $database->getConnect();
+$saved_job = new Bookmarks($conn);
 
 // Fetch saved jobs with job details
 try {
     $user_id = $_SESSION['id'];
-    $sql = "SELECT sj.saved_jobs_id, sj.saved_date, 
-                   j.job_id, j.title AS job_title, 
-                   j.company_name, j.location, 
-                   j.type AS job_type, 
-                   j.salary_min, j.salary_max
-            FROM saved_jobs sj
-            INNER JOIN jobs j ON sj.job_id = j.job_id
-            WHERE sj.user_id = :user_id";
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    $saved_jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $saved_jobs = $saved_job->retrieveBookmarks($user_id);
     $saved_count = count($saved_jobs);
 } catch (PDOException $e) {
     die("Error fetching saved jobs: " . $e->getMessage());
 }
 
-function time_elapsed_string($datetime) {}
 ?>
 
 <!DOCTYPE html>
@@ -55,8 +43,8 @@ function time_elapsed_string($datetime) {}
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-container">
-                 <div class="logo">
-                <img src="../Layouts/logo.png" alt="Profile Picture">
+                <div class="logo">
+                    <img src="../Layouts/logo.png" alt="Profile Picture">
                 </div>
                 <h3>Career Hub</h3>
             </div>
@@ -132,8 +120,8 @@ function time_elapsed_string($datetime) {}
                         <div class="saved-job-card" data-saved-id="<?php echo $job['saved_jobs_id']; ?>">
                             <div class="saved-job-header">
                                 <div class="company-logo">
-                                        <img src="../Layouts/work_icon.png" alt="Job Icon">
-                                        </div>
+                                    <img src="../Layouts/work_icon.png" alt="Job Icon">
+                                </div>
                                 <form method="POST" action="remove_saved_job.php">
                                     <input type="hidden" name="saved_job_id" value="<?php echo $job['saved_jobs_id']; ?>">
                                     <button type="submit" class="remove-saved-job">
@@ -160,7 +148,8 @@ function time_elapsed_string($datetime) {}
                                 </div>
 
                                 <div class="saved-date">
-                                    <i class="fas fa-clock"></i> Saved <?php echo time_elapsed_string($job['saved_date']); ?>
+                                    <i class="fas fa-clock"></i>
+                                    Saved <?php echo date("F j, Y g:i A", strtotime($job['saved_date'])); ?>
                                 </div>
 
                                 <div class="job-actions">

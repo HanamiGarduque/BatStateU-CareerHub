@@ -202,6 +202,32 @@
     color: #333;
   }
   
+.application-status-badge.under {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.application-status-badge.shortlisted {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.application-status-badge.interview {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.application-status-badge.offered {
+  background-color: #e0f3ff;
+  color: #0366d6;
+}
+
+.application-status-badge.rejected {
+  background-color: #f8d7da;
+  color: #dc3545;
+}
+
+  
   /* Dashboard Content */
   .dashboard-content {
     padding: 2rem;

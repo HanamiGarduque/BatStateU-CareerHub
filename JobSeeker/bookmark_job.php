@@ -16,10 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['job_id'])) {
     $bookmark = new Bookmarks($db);
 
     if ($bookmark->isBookmarked($user_id, $job_id)) {
-        $bookmark->removeByUSer($user_id, $job_id);
+        $bookmark->removeByUser($user_id, $job_id);
         $response = ['success' => true, 'isSaved' => false];
     } else {
-        $bookmark->add($user_id, $job_id);
+        $bookmark->addBookmark($user_id, $job_id);
         $response = ['success' => true, 'isSaved' => true];
     }
 }

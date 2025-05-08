@@ -4,7 +4,7 @@ require_once '../Database/crud_functions.php';
 require_once '../Database/db_connections.php';
 
 if (!isJobseeker()) {
-  header('Location: /ADMSSYSTEM/logout.php'); // Or wherever you want
+  header('Location: /ADMSSYSTEM/logout.php');
   exit();
 }
 $database = new Database(); 
@@ -27,8 +27,6 @@ if (isset($_POST['id'])) {
             echo "❌ Skill not found or not owned by the user.";
             exit;
         }
-        // header("Location: profile.php");
-        // exit;
     } catch (PDOException $e) {
         echo "❌ Error deleting skill: " . $e->getMessage();
     }
